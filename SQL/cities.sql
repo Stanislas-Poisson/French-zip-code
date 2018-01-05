@@ -32013,7 +32013,7 @@ INSERT INTO `cities` VALUES
 (31997,81,'Allenay','allenay','allenay','80130',50.0875,1.4919),
 (31998,81,'Allery','allery','allery','80270',49.9653,1.9008),
 (31999,81,'Allonville','allonville','allonville','80260',49.9414,2.3633),
-(32000,81,'Amiens','amiens','amiens','80000,',49.8943,2.2957),
+(32000,81,'Amiens','amiens','amiens','80000',49.8943,2.2957),
 (32001,81,'Amiens','amiens','amiens','80080',49.8943,2.2957),
 (32002,81,'Amiens','amiens','amiens','80000',49.8943,2.2957),
 (32003,81,'Andainville','andainville','andainville','80140',49.8933,1.7858),
