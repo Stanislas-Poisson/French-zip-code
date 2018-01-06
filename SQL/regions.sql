@@ -20,5 +20,5 @@ INSERT INTO `regions` VALUES
 (10,'Nouvelle-Aquitaine','nouvelle-aquitaine','FR-NAQ'),
 (11,'Occitanie','occitanie','FR-OCC'),
 (12,'Pays de la Loire','pays-de-la-loire','FR-PDL'),
-(13,'Provence-Alpes-Côte d\'Azur','provence-alpes-cote-d-azur','FR-PAC'),
+(13,'Provence-Alpes-Côte d''Azur','provence-alpes-cote-d-azur','FR-PAC'),
 (14,'Outre-Mer','outre-mer','');
