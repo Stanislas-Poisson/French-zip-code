@@ -2416,7 +2416,7 @@
 2415;7;"Vion";"vion";"vion";"07610";45.1111;4.8075
 2416;7;"Viviers";"viviers";"viviers";"07220";44.4836;4.6897
 2417;7;"Vocance";"vocance";"vocance";"07690";45.2019;4.5533
-2418;7;"Vogüé";"voge";"voge";"07200";44.5514;4.4152
+2418;7;"Vogüé";"vogue";"vogue";"07200";44.5514;4.4152
 2419;7;"La Voulte-sur-Rhône";"la-voulte-sur-rhone";"la voulte sur rhone";"07800";44.8003;4.78
 2420;8;"Acy-Romance";"acy-romance";"acy romance";"08300";49.5019;4.3422
 2421;8;"Aiglemont";"aiglemont";"aiglemont";"08090";49.7822;4.7666
@@ -15581,7 +15581,7 @@
 15580;41;"Lourquen";"lourquen";"lourquen";"40250";43.7319;-0.785
 15581;41;"Lubbon";"lubbon";"lubbon";"40240";44.1056;-0.025
 15582;41;"Lucbardez-et-Bargues";"lucbardez-et-bargues";"lucbardez et bargues";"40090";43.9722;-0.4038
-15583;41;"Lüe";"le";"le";"40210";44.2319;-0.983
+15583;41;"Lüe";"lue";"lue";"40210";44.2319;-0.983
 15584;41;"Luglon";"luglon";"luglon";"40630";44.0831;-0.7163
 15585;41;"Lussagnet";"lussagnet";"lussagnet";"40270";43.7761;-0.2327
 15586;41;"Luxey";"luxey";"luxey";"40430";44.2644;-0.5183
@@ -25857,7 +25857,7 @@
 25856;65;"Géronce";"geronce";"geronce";"64400";43.2411;-0.6894
 25857;65;"Gestas";"gestas";"gestas";"64190";43.35;-0.8858
 25858;65;"Géus-d'Arzacq";"geus-d-arzacq";"geus d arzacq";"64370";43.4819;-0.5205
-25859;65;"Geüs-d'Oloron";"ges-d-oloron";"ges d oloron";"64400";43.2517;-0.705
+25859;65;"Geüs-d'Oloron";"geus-d-oloron";"geus d oloron";"64400";43.2517;-0.705
 25860;65;"Goès";"goes";"goes";"64400";43.2;-0.583
 25861;65;"Gomer";"gomer";"gomer";"64420";43.2506;-0.1888
 25862;65;"Gotein-Libarrenx";"gotein-libarrenx";"gotein libarrenx";"64130";43.1911;-0.8997
@@ -35993,7 +35993,7 @@
 35992;99;"Saint-Élie";"saint-elie";"saint elie";"97312";4.8256;-53.288
 35993;99;"Saint-Georges-de-l'Oyapock";"saint-georges-de-l-oyapock";"saint georges de l oyapock";"97313";3.8894;-51.8011
 35994;99;"Saint-Laurent-du-Maroni";"saint-laurent-du-maroni";"saint laurent du maroni";"97320";5.4909;-54.0378
-35995;99;"Saül";"sal";"sal";"97314";3.6228;-53.2083
+35995;99;"Saül";"saul";"saul";"97314";3.6228;-53.2083
 35996;99;"Sinnamary";"sinnamary";"sinnamary";"97315";5.3774;-52.9595
 35997;100;"Les Avirons";"les-avirons";"les avirons";"97425";-21.2419;55.3333
 35998;100;"Bras-Panon";"bras-panon";"bras panon";"97412";-20.9953;55.6761
@@ -36113,6 +36113,6 @@
 36112;107;"Voh";"voh";"voh";"98833";-20.9593;164.688
 36113;107;"Yaté";"yate";"yate";"98834";-22.1676;166.9266
 36114;108;"Île Clipperton";"ile-clipperton";"ile clipperton";"98799";10.3039;-109.2176
-36115;14;"Aurseulles";"aurseulles";"aurseulles";"14250",49.1053,-0.7066
-36116;39;"Crolles";"crolles";"crolles";"38920",45.2858,5.8836
-36117;50;"Mazé-Milon";"maze-milon";"maze milon";"49140",47.4569,-0.2716
+36115;14;"Aurseulles";"aurseulles";"aurseulles";"14250";49.1053;-0.7066
+36116;39;"Crolles";"crolles";"crolles";"38920";45.2858;5.8836
+36117;50;"Mazé-Milon";"maze-milon";"maze milon";"49140";47.4569;-0.2716
