@@ -24248,7 +24248,7 @@ INSERT INTO `cities` VALUES
 (24232,62,'Tanville','tanville','tanville','61500',48.5683,0.0080),
 (24233,62,'Tellières-le-Plessis','tellieres-le-plessis','tellieres le plessis','61390',48.6272,0.3925),
 (24234,62,'Tessé-Froulay','tesse-froulay','tesse froulay','61410',48.5269,-0.4311),
-(24235,62,'Le Theil','le-theil','le theil','61P19',48.2639,0.6880),
+(24235,62,'Le Theil','le-theil','le theil','61260',48.2639,0.6880),
 (24236,62,'Ticheville','ticheville','ticheville','61120',48.9092,0.2652),
 (24237,62,'Tinchebray-Bocage','tinchebray-bocage','tinchebray bocage','61800',48.7628,-0.7341),
 (24238,62,'Torchamp','torchamp','torchamp','61330',48.5467,-0.6977),
