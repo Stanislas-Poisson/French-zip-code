@@ -72,7 +72,7 @@
  {"id":72, "regions_id":2, "code":"71", "name":"Sa\u00f4ne-et-Loire", "slug":"saone-et-loire", "iso_code":"FR-71"},
  {"id":73, "regions_id":12, "code":"72", "name":"Sarthe", "slug":"sarthe", "iso_code":"FR-72"},
  {"id":74, "regions_id":1, "code":"73", "name":"Savoie", "slug":"savoie", "iso_code":"FR-73"},
- {"id":75, "regions_id":1, "code":"74", "name":"Haut-Savoie", "slug":"haut-savoie", "iso_code":"FR-74"},
+ {"id":75, "regions_id":1, "code":"74", "name":"Haute-Savoie", "slug":"haute-savoie", "iso_code":"FR-74"},
  {"id":76, "regions_id":8, "code":"75", "name":"Paris", "slug":"paris", "iso_code":"FR-75"},
  {"id":77, "regions_id":9, "code":"76", "name":"Seine-Maritime", "slug":"seine-maritime", "iso_code":"FR-76"},
  {"id":78, "regions_id":8, "code":"77", "name":"Seine-et-Marne", "slug":"seine-et-marne", "iso_code":"FR-77"},
