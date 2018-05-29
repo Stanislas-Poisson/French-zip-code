@@ -86,7 +86,7 @@ INSERT INTO `departments` VALUES
 (72,2,'71','Saône-et-Loire','saone-et-loire','FR-71'),
 (73,12,'72','Sarthe','sarthe','FR-72'),
 (74,1,'73','Savoie','savoie','FR-73'),
-(75,1,'74','Haut-Savoie','haut-savoie','FR-74'),
+(75,1,'74','Haute-Savoie','haute-savoie','FR-74'),
 (76,8,'75','Paris','paris','FR-75'),
 (77,9,'76','Seine-Maritime','seine-maritime','FR-76'),
 (78,8,'77','Seine-et-Marne','seine-et-marne','FR-77'),
