@@ -1,0 +1,46 @@
+version: "2"
+
+services:
+  httpd:
+    image: httpd:2.4-alpine
+    ports:
+      - 80:80
+    volumes_from:
+      - fpm
+    links:
+      - fpm
+    volumes:
+      - ./docker/apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+      - ./docker/apache/vhosts:/usr/local/apache2/conf/vhosts:ro
+
+  fpm:
+    image: stanislasp/laravel-5-php-7.2:1.0
+    expose:
+      - 9000
+    ports:
+      - 9000:9000
+    volumes:
+      - ./docker/php/conf/php.ini:/usr/local/etc/php/php.ini:ro
+      - ./docker/php/conf/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini:ro
+      - ./docker/php/conf/crontab:/etc/cron.d/app:ro
+    volumes:
+      - .:/var/www/html:rw
+    links:
+      - mysql
+
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    volumes:
+      - ./docker/mysql/conf:/etc/mysql/conf.d/custom.cnf:ro
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: frenchzipcode
+      MYSQL_USER: frenchzipcode
+      MYSQL_PASSWORD: frenchzipcode
+
+volumes:
+  db_data:
+    driver: local
