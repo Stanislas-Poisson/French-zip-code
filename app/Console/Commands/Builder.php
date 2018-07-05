@@ -35,7 +35,7 @@ class Builder extends Command
     protected $patterns = [
         'regions'     => '/([\d]{2})(?:\t[\d\w]+){2}(?:.*)\t(.*)/',
         'departments' => '/([\d]{2})\t([\d\w]{2,3})(?:\t[\d\w]+){2}(?:.*)\t(.*)/',
-        'cities'      => '/(?:\t|[\d]+\t){1,3}([\d]{2,3})\t([\d]{2,3})(?:.*)/',
+        'cities'      => '/(?:\t|[\d]+\t){1,3}([\d\w]{2,3})\t([\d]{2,3})(?:.*)/',
     ];
 
     /**

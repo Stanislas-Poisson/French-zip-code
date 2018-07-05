@@ -1,6 +1,6 @@
--- MySQL dump 10.13  Distrib 5.7.22, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.20, for Linux (x86_64)
 --
--- Host: localhost    Database: frenchzipcode
+-- Host: 127.0.0.1    Database: frenchzipcode
 -- ------------------------------------------------------
 -- Server version	5.7.22
 
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-18 21:03:13
+-- Dump completed on 2018-07-05 13:51:23
