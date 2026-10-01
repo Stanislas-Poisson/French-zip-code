@@ -15,6 +15,24 @@ services:
       redis:
         condition: service_healthy
 
+  # Runs the queues of the update (Horizon supervises the workers). Started by `make start`.
+  horizon:
+    image: zairakai/php:latest-test
+    profiles: [queue]
+    entrypoint: []
+    command: ["php", "artisan", "horizon"]
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html:rw
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/zz-project.ini:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   mysql:
     image: mysql:8.4
     ports:

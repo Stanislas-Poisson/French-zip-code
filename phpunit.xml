@@ -23,6 +23,7 @@
 
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:RId/WWFeG2EUSgRxq4kwlwV31uHcroWE7S/Gk0VI7Lc="/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

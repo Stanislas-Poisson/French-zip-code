@@ -31,9 +31,13 @@ ARTISAN := $(COMPOSE) exec -T php php artisan
 ## —— 🐳 Docker ——
 
 .PHONY: start
-start: ## Start the containers (php, mysql, redis) and install the dependencies
-	$(COMPOSE) up -d
+start: ## Start the containers (php, mysql, redis, horizon) and prepare the application
+	$(COMPOSE) up -d mysql redis php
 	$(COMPOSE) exec -T php composer install --no-interaction --prefer-dist --optimize-autoloader
+	@test -f .env || cp .env.example .env
+	$(COMPOSE) exec -T php sh -c 'grep -q "^APP_KEY=base64" .env || php artisan key:generate'
+	$(ARTISAN) migrate --force
+	$(COMPOSE) --profile queue up -d horizon
 
 .PHONY: stop
 stop: ## Stop the project and remove its containers, network and volumes
@@ -52,3 +56,25 @@ migrate: ## Run the database migrations
 .PHONY: db-reset
 db-reset: ## Drop all the tables and migrate again
 	$(ARTISAN) migrate:fresh --force
+
+## —— 🗺️ Dataset ——
+
+.PHONY: update
+update: ## Queue an update of the dataset (official files, then the point of each zip code)
+	$(ARTISAN) zipcode:update
+
+.PHONY: update-sync
+update-sync: ## Run an update in this terminal, without the queue
+	$(COMPOSE) exec php php artisan zipcode:update --sync
+
+.PHONY: status
+status: ## Show the state of the dataset and of the last update
+	$(ARTISAN) zipcode:status
+
+.PHONY: horizon-status
+horizon-status: ## Show whether the Horizon workers are running
+	$(ARTISAN) horizon:status
+
+.PHONY: horizon-logs
+horizon-logs: ## Follow the logs of the Horizon workers
+	$(COMPOSE) logs -f horizon

@@ -35,12 +35,4 @@ return [
         ],
     ],
 
-    'google_maps' => [
-        'key' => env('GOOGLE_MAPS_KEY'),
-    ],
-
-    'com' => [
-        'uri' => env('COM_URI'),
-    ],
-
 ];
