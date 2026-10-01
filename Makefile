@@ -78,3 +78,16 @@ horizon-status: ## Show whether the Horizon workers are running
 .PHONY: horizon-logs
 horizon-logs: ## Follow the logs of the Horizon workers
 	$(COMPOSE) logs -f horizon
+
+EXPORT_DIR ?= storage/app/exports
+
+.PHONY: export
+export: ## Export the dataset and its history to CSV, JSON and SQL files (EXPORT_DIR, storage/app/exports by default)
+	$(ARTISAN) zipcode:export --path=/var/www/html/$(EXPORT_DIR)
+	@mkdir -p $(EXPORT_DIR)/sql
+	$(COMPOSE) exec -T mysql mysqldump -uroot -proot --no-tablespaces --skip-comments --skip-lock-tables frenchzipcode regions departments communes cities commune_successions reference_changes > $(EXPORT_DIR)/sql/dataset.sql
+	@echo "SQL dump written to $(EXPORT_DIR)/sql/dataset.sql"
+
+.PHONY: resolve
+resolve: ## Find where an old commune code points to today (CODE=37261 ZIP=37000 DATE=2015-01-01)
+	$(ARTISAN) zipcode:resolve $(CODE) $(if $(ZIP),--zip=$(ZIP)) $(if $(DATE),--date=$(DATE))
