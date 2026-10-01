@@ -2,15 +2,15 @@
 # - 57PH3N H4WK1NG
 
 .DEFAULT_GOAL = help
-.PHONY: help start stop restart ssh build install composer node front chown-dir migration seed php-cs fix clean dist-clean db-reset queue-listen docker-prune
+.PHONY: help start stop restart ssh builder export build install composer migration pint clean dist-clean db-reset docker-prune
 
 include .env
 
 PROJECT = frenchzipcode
-COMPOSE = docker-compose -p $(PROJECT)
-RUN = $(COMPOSE) run --rm fpm
-EXEC = docker exec -ti $(PROJECT)_fpm_1
-EXPORT = docker exec $(PROJECT)_mysql_1
+COMPOSE = docker compose -p $(PROJECT)
+RUN = $(COMPOSE) run --rm php
+EXEC = docker exec -ti $(PROJECT)-php-1
+EXPORT = docker exec $(PROJECT)-mysql-1
 COMPOSE_HTTP_TIMEOUT = 300
 
 help:	## Show this help
@@ -18,14 +18,10 @@ help:	## Show this help
 	@echo ''
 
 start: build install	## Start the project
-	$(COMPOSE) up -d fpm
 	$(COMPOSE) up -d
 
-stop:	## Stop and clear the project
-	docker ps -aq | xargs docker stop
-	docker ps -aq | xargs docker rm
-	docker volume ls -q | xargs docker volume rm
-	docker network prune -f
+stop:	## Stop and clear the project (containers, network and database volume)
+	$(COMPOSE) down -v --remove-orphans
 
 restart: stop start	## Execute stop and start
 
@@ -42,57 +38,28 @@ export:	## Export the build
 	@$(EXPORT) sh -c 'exec mysqldump -u root --password=root $(DB_DATABASE) cities' > ./Exports/sql/cities.sql
 
 build:	## Pull and build the containers
-	$(COMPOSE) pull --ignore-pull-failures
-	$(COMPOSE) build --pull --force-rm
+	$(COMPOSE) build --pull
 
-install: composer node front chown-dir seed
+install: composer migration
 
 composer:	## Install or update the composer dependencies
 	if [ ! -d vendor ]; then $(RUN) composer install --no-interaction --prefer-dist --optimize-autoloader; else $(RUN) composer dump-autoload; fi
 
-composer-install:	## Update the composer
-	$(RUN) rm -f ./composer.lock
-	$(RUN) composer install --no-interaction --prefer-dist --optimize-autoloader
-
-node:	## Install or update the node dependencies
-	if [ ! -d node_modules ]; then $(RUN) npm install --ignore-engines; fi
-
-front:	## Run the buil for the front
-	$(RUN) npm run dev
-
-chown-dir:	## Change the directory owner and access
-	$(RUN) chgrp -R www-data /var/www/html
-	$(RUN) chmod -R 0777 /var/www/html/docker/apache/logs/ /var/www/html/storage /var/www/html/bootstrap/cache
-
 migration:	## Artisan migrate through docker
 	$(RUN) php artisan migrate
 
-seed: migration	## Artisan migrate then seed through docker
-	$(RUN) php artisan db:seed
+pint:	## Run Laravel Pint to fix the code style
+	$(RUN) vendor/bin/pint
 
-php-cs: ## Run the PHP-CS-Fixer
-	$(RUN) php artisan fixer:fix --no-interaction --dry-run --diff --using-cache=no
-
-fix: ## Run the PHP-CS-Fixer to fix the files
-	$(RUN) php artisan fixer:fix --using-cache=no
-
-clean:	## Clean the Laravel cahce, view, config, route and delete some directories
-	$(RUN) rm -rf public/build/* public/css/* public/js/* storage/debugbar
+clean:	## Clean the Laravel cache and config
 	$(RUN) php artisan cache:clear
-	$(RUN) php artisan view:clear
 	$(RUN) php artisan config:clear
-	$(RUN) php artisan route:clear
 
-dist-clean: clean	## In addition to "clean" delete the node_modules and vendor directories
-	$(RUN) rm -rf node_modules vendor/*
+dist-clean: clean	## In addition to "clean" delete the vendor directory
+	$(RUN) rm -rf vendor/*
 
-db-reset:	## Rebuild, migrate and seed the database
-	$(RUN) php artisan migrate:reset
-	$(RUN) php artisan migrate
-	$(RUN) php artisan db:seed
-
-queue-listen:	## Show the queue listen by artisan through docker
-	$(RUN) php artisan queue:listen
+db-reset:	## Drop all the tables and migrate again
+	$(RUN) php artisan migrate:fresh
 
 docker-prune:	## Prune the system
 	docker system prune -af

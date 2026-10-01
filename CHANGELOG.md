@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Changed
+- Migration vers Laravel 13, PHP 8.3 et MySQL 8.4.
+- Environnement Docker réduit à PHP (CLI) et MySQL, Apache n'est plus nécessaire.
+- Les appels HTTP (geo.api.gouv.fr, Google Maps, Nominatim) utilisent le client HTTP de Laravel.
+
+### Removed
+- Frontend (Vue, Laravel Mix), authentification et pages web inutilisés.
+
+------------
+
 ## [2.0.0] - 2018-06-19
 Changement intégrale des données d'origine, de la méthodologie de récupération ainsi que de la structure des données.
 Consultez le README.md pour plus d'informations.

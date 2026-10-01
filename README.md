@@ -20,7 +20,7 @@ La page indiquer est la ressource disponible, elle est donc parsée afin d'extra
 
 ## Clone, outils requis et commandes
 Le dépôt utilise plusieurs technologies requises sur votre système d'exploitation :
-- [Docker](https://www.docker.com/) afin de concevoir les environnements de travail (_apache, php7 et mysql_).
+- [Docker](https://www.docker.com/) afin de concevoir les environnements de travail (_PHP 8.3 et MySQL 8.4_).
 - [Make](http://www.gnu.org/software/make/) afin de mettre des commandes simple à disposition (_Makefile_).
 
 - Cloner le projet dans un répertoire de votre ordinateur.
@@ -28,8 +28,7 @@ Le dépôt utilise plusieurs technologies requises sur votre système d'exploita
   - cities.txt
   - departments.txt
   - regions.txt
-- Editer le ficher `.env.exemple` et enregistrer le sous `.env`, modifier les différentes variables requises :
-  - **APP_KEY** pour un bon fonctionnement de l'appli.
+- Editer le ficher `.env.example` et enregistrer le sous `.env`, modifier les différentes variables requises :
   - **GOOGLE_MAPS_KEY** une clé valide d'accès à [Google Maps API Geocoding](https://developers.google.com/maps/documentation/geocoding/start?hl=fr).
   - **COM_URI** si la ressource des COM de l'INSEE à changer.
 - Dirigez vous dans son dossier en ligne de commande.
@@ -40,8 +39,10 @@ Le dépôt utilise plusieurs technologies requises sur votre système d'exploita
 ### Commandes make
 - `make help` permet de lister toutes les commandes disponible.
 - `make start` permet de lancer le projet.
-- `make stop` permet de stopper le projet.
+- `make stop` permet de stopper le projet (conteneurs, réseau et volume de la base).
 - `make restart` composition de `make stop` et `make start` permet de relancer le projet.
+- `make ssh` permet d'ouvrir un shell dans le conteneur PHP.
+- `make pint` permet de formater le code avec Laravel Pint.
 - `make builder` permet de lancer la génération des données.
 - `make export` permet de lancer l'export des données générer.
 
