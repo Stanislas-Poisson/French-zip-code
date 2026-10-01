@@ -6,6 +6,7 @@ namespace App\Actions;
 
 use App\Enums\CoordinateSource;
 use App\Models\City;
+use App\Models\Commune;
 use App\Services\Sources\NominatimClient;
 use App\Support\GeoDistance;
 
@@ -33,13 +34,8 @@ final readonly class GeocodeCityWithNominatim
             return false;
         }
 
-        if (null !== $commune->centre_latitude && null !== $commune->centre_longitude) {
-            $distance = GeoDistance::kilometers($commune->centre_latitude, $commune->centre_longitude, $point['latitude'], $point['longitude']);
-            $maximum  = config('sources.nominatim.max_distance_km');
-
-            if ($distance > (is_numeric($maximum) ? (float) $maximum : 30.0)) {
-                return false;
-            }
+        if ($this->isTooFar($commune, $point)) {
+            return false;
         }
 
         $city->update([
@@ -50,5 +46,24 @@ final readonly class GeocodeCityWithNominatim
         ]);
 
         return true;
+    }
+
+    /**
+     * @param array{latitude: float, longitude: float} $point
+     */
+    private function isTooFar(Commune $commune, array $point): bool
+    {
+        if (null === $commune->centre_latitude || null === $commune->centre_longitude) {
+            return false;
+        }
+
+        $distance = GeoDistance::kilometers(
+            $commune->centre_latitude,
+            $commune->centre_longitude,
+            $point['latitude'],
+            $point['longitude'],
+        );
+
+        return config()->integer('sources.nominatim.max_distance_km', 30) < $distance;
     }
 }

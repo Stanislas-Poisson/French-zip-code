@@ -38,7 +38,8 @@ final readonly class ImportCog
     public function execute(CogImportFiles $cogImportFiles, CarbonImmutable $effectiveDate, Snapshot $snapshot): array
     {
         return DB::transaction(function () use ($cogImportFiles, $effectiveDate, $snapshot): array {
-            $this->importRegions->execute($this->regionParser->parse($cogImportFiles->regions), $effectiveDate, $snapshot);
+            $generator = $this->regionParser->parse($cogImportFiles->regions);
+            $this->importRegions->execute($generator, $effectiveDate, $snapshot);
 
             $this->importDepartments->execute(
                 $this->mergedDepartments($cogImportFiles),
@@ -46,14 +47,19 @@ final readonly class ImportCog
                 $snapshot,
             );
 
-            $movements   = $this->importMovements->execute($this->movementParser->parse($cogImportFiles->movements), $snapshot);
+            $movements = $this->importMovements->execute(
+                $this->movementParser->parse($cogImportFiles->movements),
+                $snapshot,
+            );
             $successions = $this->buildSuccessions->execute();
 
             $communes = $this->importCommunes->execute(
                 $this->communeParser->parseHistory($cogImportFiles->communeHistory),
                 $this->communeParser->parseCurrent($cogImportFiles->communes),
                 $this->communeParser->parseOverseas($cogImportFiles->overseasCommunes),
-                $this->identityBreakDates->fromMovements($this->movementParser->parse($cogImportFiles->movements)),
+                $this->identityBreakDates->fromMovements(
+                    $this->movementParser->parse($cogImportFiles->movements),
+                ),
             );
 
             return ['movements' => $movements, 'successions' => $successions, 'communes' => $communes];

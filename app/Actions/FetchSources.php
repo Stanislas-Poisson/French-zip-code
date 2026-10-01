@@ -16,6 +16,16 @@ final readonly class FetchSources
 
     public const string LA_POSTE = 'laposte';
 
+    private const array COG_FILES = [
+        'v_region',
+        'v_departement',
+        'v_comer',
+        'v_commune',
+        'v_commune_comer',
+        'v_commune_depuis_1943',
+        'v_mvt_commune',
+    ];
+
     public function __construct(
         private FileDownloader $fileDownloader,
         private InseeCogLocator $inseeCogLocator,
@@ -34,8 +44,13 @@ final readonly class FetchSources
         $checksums = [];
         $paths     = [];
 
-        foreach (['v_region', 'v_departement', 'v_comer', 'v_commune', 'v_commune_comer', 'v_commune_depuis_1943', 'v_mvt_commune'] as $name) {
-            $file         = $this->fileDownloader->download($cogVintage->url($name), $directory . '/' . self::COG . '/' . $cogVintage->year . '/' . $name . '.csv');
+        $cogDirectory = $directory . '/' . self::COG . '/' . $cogVintage->year;
+
+        foreach (self::COG_FILES as $name) {
+            $file         = $this->fileDownloader->download(
+                $cogVintage->url($name),
+                $cogDirectory . '/' . $name . '.csv',
+            );
             $checksums[]  = $file->checksum;
             $paths[$name] = $file->path;
         }
@@ -43,7 +58,7 @@ final readonly class FetchSources
         $cogSnapshot = $this->recordSnapshot->execute(
             self::COG,
             (string) $cogVintage->year,
-            new DownloadedFile($directory . '/' . self::COG . '/' . $cogVintage->year, hash('sha256', implode('', $checksums)), 0),
+            new DownloadedFile($cogDirectory, hash('sha256', implode('', $checksums)), 0),
         );
 
         $laPosteUrl     = config('sources.laposte.file_url');

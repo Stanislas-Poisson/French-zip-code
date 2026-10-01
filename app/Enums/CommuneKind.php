@@ -28,4 +28,13 @@ enum CommuneKind: string
      * Delegated commune (commune déléguée).
      */
     case Delegated = 'COMD';
+
+    /**
+     * Whether the entity owns an INSEE code of its own: a commune or a municipal arrondissement.
+     * Delegated and associated communes are only parts of another commune.
+     */
+    public function ownsCode(): bool
+    {
+        return self::Commune === $this || self::Arrondissement === $this;
+    }
 }

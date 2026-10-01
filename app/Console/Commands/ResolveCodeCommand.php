@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Actions\ResolveCity;
+use App\Data\Resolution\CityResolution;
+use App\Data\Resolution\ResolutionStep;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -20,17 +22,11 @@ final class ResolveCodeCommand extends Command
     public function handle(ResolveCity $resolveCity): int
     {
         $code = (string) $this->argument('code');
-        $zip  = $this->option('zip');
-        $date = $this->option('date');
 
-        $cityResolution = $resolveCity->execute(
-            $code,
-            is_string($zip)  && '' !== $zip ? $zip : null,
-            is_string($date) && '' !== $date ? CarbonImmutable::parse($date) : null,
-        );
+        $cityResolution = $resolveCity->execute($code, $this->stringOption('zip'), $this->dateOption());
 
         foreach ($cityResolution->commune->steps as $step) {
-            $this->line(sprintf('%s  %s: %s -> %s', $step->effectiveDate->toDateString(), $step->kind->value, $step->fromCode, $step->toCode ?? 'no successor'));
+            $this->line($this->describe($step));
         }
 
         if ($cityResolution->commune->disappeared) {
@@ -40,15 +36,54 @@ final class ResolveCodeCommand extends Command
         }
 
         $this->info('Current communes: ' . implode(', ', $cityResolution->commune->currentCodes));
+        $this->renderCities($cityResolution);
 
+        return self::SUCCESS;
+    }
+
+    private function dateOption(): ?CarbonImmutable
+    {
+        $date = $this->stringOption('date');
+
+        return null === $date ? null : CarbonImmutable::parse($date);
+    }
+
+    private function describe(ResolutionStep $resolutionStep): string
+    {
+        return sprintf(
+            '%s  %s: %s -> %s',
+            $resolutionStep->effectiveDate->toDateString(),
+            $resolutionStep->kind->value,
+            $resolutionStep->fromCode,
+            $resolutionStep->toCode ?? 'no successor',
+        );
+    }
+
+    private function renderCities(CityResolution $cityResolution): void
+    {
         foreach ($cityResolution->cities as $city) {
-            $this->line(sprintf('city #%d  %s  %s  (%s, %s)', $city->id, $city->postal_code, $city->label ?? '', $city->latitude, $city->longitude));
+            $this->line(sprintf(
+                'city #%d  %s  %s  (%s, %s)',
+                $city->id,
+                $city->postal_code,
+                $city->label ?? '',
+                $city->latitude,
+                $city->longitude,
+            ));
         }
 
         if (null !== $cityResolution->postalCode && ! $cityResolution->exactPostal) {
-            $this->warn('The zip code ' . $cityResolution->postalCode . ' is not used any more by these communes: all their zip codes are listed.');
+            $this->warn(
+                'The zip code ' . $cityResolution->postalCode
+                . ' is not used any more by these communes: all their zip codes are listed.',
+            );
         }
+    }
 
-        return self::SUCCESS;
+    private function stringOption(string $name): ?string
+    {
+        $value = $this->option($name);
+
+        return is_string($value) && '' !== $value ? $value : null;
     }
 }

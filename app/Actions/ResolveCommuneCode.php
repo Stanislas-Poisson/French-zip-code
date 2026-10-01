@@ -20,9 +20,8 @@ final class ResolveCommuneCode
      */
     public function execute(string $code, ?CarbonImmutable $asOf = null): CodeResolution
     {
-        $steps       = [];
-        $terminals   = [];
-        $disappeared = false;
+        $steps     = [];
+        $terminals = [];
 
         /** @var list<array{0: string, 1: CarbonImmutable|null}> $queue */
         $queue   = [[$code, $asOf]];
@@ -31,65 +30,131 @@ final class ResolveCommuneCode
         while ([] !== $queue) {
             [$current, $since] = array_shift($queue);
 
-            if (isset($visited[$current . '|' . ($since?->toDateString() ?? '')])) {
+            $visit = $current . '|' . ($since?->toDateString() ?? '');
+
+            if (isset($visited[$visit])) {
                 continue;
             }
 
-            $visited[$current . '|' . ($since?->toDateString() ?? '')] = true;
+            $visited[$visit] = true;
 
-            $gone = false;
+            $walked = $this->stepsOf($current, $since);
+            $steps  = [...$steps, ...$walked];
+            $queue  = [...$queue, ...$this->followed($walked)];
 
-            foreach ($this->successionsOf($current, $since) as $succession) {
-                $step = new ResolutionStep(
-                    fromCode: $current,
-                    toCode: $succession->to_code,
-                    kind: $succession->kind,
-                    effectiveDate: CarbonImmutable::parse($succession->effective_date),
-                );
-                $steps[] = $step;
-
-                if (SuccessionKind::Deleted === $succession->kind) {
-                    $disappeared = true;
-                    $gone        = true;
-
-                    break;
-                }
-
-                if (null === $succession->to_code) {
-                    continue;
-                }
-
-                if (SuccessionKind::Split === $succession->kind) {
-                    $queue[] = [$succession->to_code, $step->effectiveDate];
-
-                    continue;
-                }
-
-                if (in_array($succession->kind, [SuccessionKind::Replaced, SuccessionKind::Absorbed], true) && $succession->to_code !== $current) {
-                    $queue[] = [$succession->to_code, $step->effectiveDate];
-                    $gone    = true;
-
-                    break;
-                }
-            }
-
-            if (! $gone) {
+            if (! $this->isLeft($walked)) {
                 $terminals[$current] = true;
             }
         }
 
-        $currentCodes = array_values(array_filter(
-            array_map(strval(...), array_keys($terminals)),
-            static fn (string $terminal): bool => Commune::query()->current()->where('insee_code', $terminal)->exists(),
-        ));
+        $currentCodes = $this->currentCodes(array_map(strval(...), array_keys($terminals)));
 
         return new CodeResolution(
             requestedCode: $code,
             asOf: $asOf,
             steps: $steps,
             currentCodes: $currentCodes,
-            disappeared: $disappeared || [] === $currentCodes,
+            disappeared: [] === $currentCodes || array_any($steps, $this->isDeletion(...)),
         );
+    }
+
+    /**
+     * @param list<string> $codes
+     *
+     * @return list<string> the codes that belong to a commune still valid
+     */
+    private function currentCodes(array $codes): array
+    {
+        return array_values(array_filter(
+            $codes,
+            static fn (string $code): bool => Commune::query()->current()->where('insee_code', $code)->exists(),
+        ));
+    }
+
+    /**
+     * The codes to follow next, with the date from which to follow them.
+     *
+     * @param list<ResolutionStep> $steps
+     *
+     * @return list<array{0: string, 1: CarbonImmutable}>
+     */
+    private function followed(array $steps): array
+    {
+        $next = [];
+
+        foreach ($steps as $step) {
+            if (null !== $step->toCode && $this->isFollowed($step)) {
+                $next[] = [$step->toCode, $step->effectiveDate];
+            }
+        }
+
+        return $next;
+    }
+
+    private function isDeletion(ResolutionStep $resolutionStep): bool
+    {
+        return SuccessionKind::Deleted === $resolutionStep->kind;
+    }
+
+    /**
+     * A split keeps the code alive but its parts are followed too.
+     */
+    private function isFollowed(ResolutionStep $resolutionStep): bool
+    {
+        return SuccessionKind::Split === $resolutionStep->kind || $this->leavesTheCode($resolutionStep);
+    }
+
+    /**
+     * @param list<ResolutionStep> $steps
+     */
+    private function isLeft(array $steps): bool
+    {
+        return [] !== $steps && $this->leavesTheCode(end($steps));
+    }
+
+    /**
+     * A deletion, a replacement by another code or an absorption ends the life of the code.
+     */
+    private function leavesTheCode(ResolutionStep $resolutionStep): bool
+    {
+        $kind     = $resolutionStep->kind;
+        $sameCode = $resolutionStep->toCode === $resolutionStep->fromCode;
+
+        return match (true) {
+            SuccessionKind::Deleted === $kind                              => true,
+            null                    === $resolutionStep->toCode, $sameCode => false,
+            default                                                        => $this->movesTheCode($kind),
+        };
+    }
+
+    private function movesTheCode(SuccessionKind $successionKind): bool
+    {
+        return in_array($successionKind, [SuccessionKind::Replaced, SuccessionKind::Absorbed], true);
+    }
+
+    /**
+     * The successions of one code, up to the first one that makes the code leave.
+     *
+     * @return list<ResolutionStep>
+     */
+    private function stepsOf(string $current, ?CarbonImmutable $since): array
+    {
+        $steps = [];
+
+        foreach ($this->successionsOf($current, $since) as $succession) {
+            $steps[] = new ResolutionStep(
+                fromCode: $current,
+                toCode: $succession->to_code,
+                kind: $succession->kind,
+                effectiveDate: CarbonImmutable::parse($succession->effective_date),
+            );
+
+            if ($this->leavesTheCode(end($steps))) {
+                break;
+            }
+        }
+
+        return $steps;
     }
 
     /**

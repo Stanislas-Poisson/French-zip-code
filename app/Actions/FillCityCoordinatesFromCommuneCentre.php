@@ -12,6 +12,12 @@ use Illuminate\Support\Facades\DB;
 
 final class FillCityCoordinatesFromCommuneCentre
 {
+    private const string CENTRE_LATITUDE = '(select centre_latitude from communes'
+        . ' where communes.id = cities.commune_id)';
+
+    private const string CENTRE_LONGITUDE = '(select centre_longitude from communes'
+        . ' where communes.id = cities.commune_id)';
+
     /**
      * Gives every city without a better point the centre of its commune (last fallback).
      * A point coming from the BAN or from Nominatim is never overwritten.
@@ -28,8 +34,8 @@ final class FillCityCoordinatesFromCommuneCentre
             })
             ->whereIn('commune_id', Commune::query()->whereNotNull('centre_latitude')->select('id'))
             ->update([
-                'latitude'          => DB::raw('(select centre_latitude from communes where communes.id = cities.commune_id)'),
-                'longitude'         => DB::raw('(select centre_longitude from communes where communes.id = cities.commune_id)'),
+                'latitude'          => DB::raw(self::CENTRE_LATITUDE),
+                'longitude'         => DB::raw(self::CENTRE_LONGITUDE),
                 'coordinate_source' => CoordinateSource::CommuneCentre->value,
             ]);
     }

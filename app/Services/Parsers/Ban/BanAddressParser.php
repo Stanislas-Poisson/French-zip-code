@@ -21,16 +21,28 @@ final readonly class BanAddressParser
     public function parse(string $path): Generator
     {
         foreach ($this->csvFile->rows('compress.zlib://' . $path, ';') as $row) {
-            $inseeCode  = $row['code_insee']  ?? '';
-            $postalCode = $row['code_postal'] ?? '';
-            $latitude   = $row['lat']         ?? '';
-            $longitude  = $row['lon']         ?? '';
+            $point = $this->toPoint($row);
 
-            if ('' === $inseeCode || '' === $postalCode || ! is_numeric($latitude) || ! is_numeric($longitude)) {
-                continue;
+            if ($point instanceof BanAddressPoint) {
+                yield $point;
             }
-
-            yield new BanAddressPoint($inseeCode, $postalCode, (float) $latitude, (float) $longitude);
         }
+    }
+
+    /**
+     * @param array<string, string> $row
+     */
+    private function toPoint(array $row): ?BanAddressPoint
+    {
+        $inseeCode  = $row['code_insee']  ?? '';
+        $postalCode = $row['code_postal'] ?? '';
+        $latitude   = $row['lat']         ?? '';
+        $longitude  = $row['lon']         ?? '';
+
+        if ('' === $inseeCode || '' === $postalCode || ! is_numeric($latitude) || ! is_numeric($longitude)) {
+            return null;
+        }
+
+        return new BanAddressPoint($inseeCode, $postalCode, (float) $latitude, (float) $longitude);
     }
 }

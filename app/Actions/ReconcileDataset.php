@@ -8,6 +8,7 @@ use App\Data\Sources\ReconciliationReport;
 use App\Models\City;
 use App\Models\Commune;
 use App\Models\Snapshot;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 
 final readonly class ReconcileDataset
@@ -27,22 +28,7 @@ final readonly class ReconcileDataset
      */
     public function execute(string $runId, array $snapshotIds, int $failedJobs): ReconciliationReport
     {
-        $notRun = [];
-        $failed = [];
-
-        foreach ($this->computeDepartmentCoordinates->departmentCodes() as $code) {
-            $result = Cache::get(self::cacheKey($runId, $code));
-
-            if (null === $result) {
-                $notRun[] = $code;
-
-                continue;
-            }
-
-            if ('failed' === $result) {
-                $failed[] = $code;
-            }
-        }
+        [$notRun, $failed] = $this->departmentsByStatus($runId);
 
         /** @var array<string, int> $bySource */
         $bySource = City::query()
@@ -57,7 +43,10 @@ final readonly class ReconcileDataset
             openCities: City::query()->current()->count(),
             citiesWithoutCoordinates: City::query()->current()->whereNull('latitude')->count(),
             citiesBySource: $bySource,
-            communesWithoutCity: Commune::query()->current()->whereDoesntHave('cities', static fn ($query) => $query->whereNull('valid_to'))->count(),
+            communesWithoutCity: Commune::query()
+                ->current()
+                ->whereDoesntHave('cities', static fn (Builder $builder) => $builder->whereNull('valid_to'))
+                ->count(),
             departmentsNotRun: $notRun,
             departmentsFailed: $failed,
             failedJobs: $failedJobs,
@@ -68,5 +57,27 @@ final readonly class ReconcileDataset
         }
 
         return $reconciliationReport;
+    }
+
+    /**
+     * @return array{0: list<string>, 1: list<string>} departments that did not run, departments that failed
+     */
+    private function departmentsByStatus(string $runId): array
+    {
+        $notRun = [];
+        $failed = [];
+
+        foreach ($this->computeDepartmentCoordinates->departmentCodes() as $code) {
+            $result = Cache::get(self::cacheKey($runId, $code));
+
+            if (null === $result) {
+                $notRun[] = $code;
+            }
+            elseif ('failed' === $result) {
+                $failed[] = $code;
+            }
+        }
+
+        return [$notRun, $failed];
     }
 }

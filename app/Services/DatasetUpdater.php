@@ -95,7 +95,11 @@ final readonly class DatasetUpdater
     {
         $reconciliationReport = $this->reconcileDataset->execute($runId, $snapshotIds, $failedBanJobs);
 
-        Cache::forever(self::REPORT_CACHE_KEY, ['runId' => $runId, 'complete' => $reconciliationReport->isComplete(), 'report' => (array) $reconciliationReport]);
+        Cache::forever(self::REPORT_CACHE_KEY, [
+            'runId'    => $runId,
+            'complete' => $reconciliationReport->isComplete(),
+            'report'   => (array) $reconciliationReport,
+        ]);
 
         Log::log(
             $reconciliationReport->isComplete() ? 'info' : 'warning',

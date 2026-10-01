@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
-use App\Enums\CommuneKind;
 use App\Enums\EventModality;
 use App\Enums\SuccessionKind;
 use App\Models\CommuneEvent;
 use App\Models\CommuneSuccession;
+use Illuminate\Support\LazyCollection;
 
 final class BuildSuccessions
 {
@@ -25,57 +25,35 @@ final class BuildSuccessions
         CommuneSuccession::query()->delete();
 
         $count = 0;
-        $rows  = [];
 
-        foreach (CommuneEvent::query()->orderBy('id')->cursor() as $lazyCollection) {
-            $kind = $this->kindOf($lazyCollection);
-
-            if (! $kind instanceof SuccessionKind) {
-                continue;
-            }
-
-            $rows[] = [
-                'commune_event_id' => $lazyCollection->id,
-                'from_code'        => (string) $lazyCollection->code_before,
-                'to_code'          => SuccessionKind::Deleted === $kind ? null : $lazyCollection->code_after,
-                'kind'             => $kind->value,
-                'effective_date'   => $lazyCollection->effective_date->toDateString(),
-            ];
-            $count++;
-
-            if (self::CHUNK_SIZE === count($rows)) {
-                CommuneSuccession::query()->insert($rows);
-                $rows = [];
-            }
-        }
-
-        if ([] !== $rows) {
-            CommuneSuccession::query()->insert($rows);
+        foreach ($this->rows()->chunk(self::CHUNK_SIZE) as $chunk) {
+            CommuneSuccession::query()->insert($chunk->values()->all());
+            $count += $chunk->count();
         }
 
         return $count;
     }
 
-    private function isCommune(?CommuneKind $communeKind): bool
-    {
-        return CommuneKind::Commune === $communeKind || CommuneKind::Arrondissement === $communeKind;
-    }
-
     private function kindOf(CommuneEvent $communeEvent): ?SuccessionKind
     {
-        if (null === $communeEvent->code_before || ! $this->isCommune($communeEvent->kind_before)) {
-            return null;
-        }
+        return match (true) {
+            null === $communeEvent->code_before,
+            true !== $communeEvent->kind_before?->ownsCode() => null,
+            null === $communeEvent->code_after               => $this->kindWithoutSuccessor($communeEvent),
+            // A commune becoming an arrondissement (or the opposite) is not a change of commune code.
+            $communeEvent->kind_before !== $communeEvent->kind_after,
+            ! $communeEvent->kind_after->ownsCode()         => null,
+            default                                         => $this->kindWithSuccessor($communeEvent),
+        };
+    }
 
-        if (null === $communeEvent->code_after) {
-            return EventModality::Deletion === $communeEvent->modality ? SuccessionKind::Deleted : null;
-        }
+    private function kindWithoutSuccessor(CommuneEvent $communeEvent): ?SuccessionKind
+    {
+        return EventModality::Deletion === $communeEvent->modality ? SuccessionKind::Deleted : null;
+    }
 
-        // A commune becoming an arrondissement (or the opposite) is not a change of commune code.
-        if ($communeEvent->kind_before !== $communeEvent->kind_after || ! $this->isCommune($communeEvent->kind_after)) {
-            return null;
-        }
-
+    private function kindWithSuccessor(CommuneEvent $communeEvent): ?SuccessionKind
+    {
         $sameCode = $communeEvent->code_before === $communeEvent->code_after;
 
         return match ($communeEvent->modality) {
@@ -90,5 +68,37 @@ final class BuildSuccessions
             EventModality::Reinstatement => $sameCode ? null : SuccessionKind::Split,
             default                      => null,
         };
+    }
+
+    /**
+     * @return LazyCollection<int, non-empty-array<string, mixed>>
+     */
+    private function rows(): LazyCollection
+    {
+        return CommuneEvent::query()
+            ->orderBy('id')
+            ->cursor()
+            ->map($this->toRow(...))
+            ->filter();
+    }
+
+    /**
+     * @return non-empty-array<string, mixed>|null
+     */
+    private function toRow(CommuneEvent $communeEvent): ?array
+    {
+        $kind = $this->kindOf($communeEvent);
+
+        if (! $kind instanceof SuccessionKind) {
+            return null;
+        }
+
+        return [
+            'commune_event_id' => $communeEvent->id,
+            'from_code'        => (string) $communeEvent->code_before,
+            'to_code'          => SuccessionKind::Deleted === $kind ? null : $communeEvent->code_after,
+            'kind'             => $kind->value,
+            'effective_date'   => $communeEvent->effective_date->toDateString(),
+        ];
     }
 }

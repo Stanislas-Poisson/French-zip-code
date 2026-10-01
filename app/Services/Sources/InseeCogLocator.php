@@ -16,9 +16,7 @@ final class InseeCogLocator
 {
     public function latest(): CogVintage
     {
-        $url = config('sources.insee.dataset_url');
-
-        $resources = Http::get(is_string($url) ? $url : '')->throw()->json('resources');
+        $resources = Http::get(config()->string('sources.insee.dataset_url', ''))->throw()->json('resources');
 
         if (! is_array($resources)) {
             throw new RuntimeException('The COG dataset has no resources.');
@@ -28,27 +26,11 @@ final class InseeCogLocator
         $byYear = [];
 
         foreach ($resources as $resource) {
-            if (! is_array($resource)) {
-                continue;
+            $vintage = $this->vintageOf($resource);
+
+            if (null !== $vintage) {
+                $byYear[$vintage['year']][$vintage['file']] = $vintage['url'];
             }
-
-            $title       = $resource['title'] ?? null;
-            $resourceUrl = $resource['url']   ?? null;
-
-            if (! is_string($title) || ! is_string($resourceUrl)) {
-                continue;
-            }
-
-            if (1 !== preg_match('/^Millésime (\d{4})\s*:/u', $title, $vintage)) {
-                continue;
-            }
-
-            // Only the suffix of the vintage itself is removed: v_commune_depuis_1943 keeps its 1943.
-            if (1 !== preg_match('~/(v_[a-z0-9_]+?)(?:_' . $vintage[1] . ')?\.csv$~', $resourceUrl, $file)) {
-                continue;
-            }
-
-            $byYear[(int) $vintage[1]][$file[1]] = $resourceUrl;
         }
 
         if ([] === $byYear) {
@@ -58,5 +40,29 @@ final class InseeCogLocator
         $year = max(array_keys($byYear));
 
         return new CogVintage($year, $byYear[$year]);
+    }
+
+    /**
+     * @return array{year: int, file: string, url: string}|null
+     */
+    private function vintageOf(mixed $resource): ?array
+    {
+        $title = data_get($resource, 'title');
+        $url   = data_get($resource, 'url');
+
+        if (! is_string($title) || ! is_string($url)) {
+            return null;
+        }
+
+        if (1 !== preg_match('/^Millésime (\d{4})\s*:/u', $title, $vintage)) {
+            return null;
+        }
+
+        // Only the suffix of the vintage itself is removed: v_commune_depuis_1943 keeps its 1943.
+        if (1 !== preg_match('~/(v_[a-z0-9_]+?)(?:_' . $vintage[1] . ')?\.csv$~', $url, $file)) {
+            return null;
+        }
+
+        return ['year' => (int) $vintage[1], 'file' => $file[1], 'url' => $url];
     }
 }

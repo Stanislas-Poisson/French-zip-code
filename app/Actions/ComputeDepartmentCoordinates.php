@@ -43,7 +43,9 @@ final readonly class ComputeDepartmentCoordinates
     public function execute(string $departmentCode): array
     {
         $directory   = config('sources.directory');
-        $destination = (is_string($directory) ? $directory : storage_path('app/sources')) . '/ban/adresses-' . $departmentCode . '.csv.gz';
+        $directory   = is_string($directory) ? $directory : storage_path('app/sources');
+
+        $destination = $directory . '/ban/adresses-' . $departmentCode . '.csv.gz';
 
         $file = $this->banClient->fetch($departmentCode, $destination);
 
@@ -51,10 +53,16 @@ final readonly class ComputeDepartmentCoordinates
             return ['points' => 0, 'updated' => 0, 'unmatched' => 0, 'skipped' => true];
         }
 
-        $minimum = config('sources.ban.minimum_addresses');
-        $points  = $this->cityPointCalculator->compute($this->banAddressParser->parse($file->path), is_int($minimum) ? $minimum : 1);
-        $result  = $this->applyBanCoordinates->execute($points);
+        $minimum   = config('sources.ban.minimum_addresses');
+        $generator = $this->banAddressParser->parse($file->path);
+        $points    = $this->cityPointCalculator->compute($generator, is_int($minimum) ? $minimum : 1);
+        $result    = $this->applyBanCoordinates->execute($points);
 
-        return ['points' => count($points), 'updated' => $result['updated'], 'unmatched' => $result['unmatched'], 'skipped' => false];
+        return [
+            'points'    => count($points),
+            'updated'   => $result['updated'],
+            'unmatched' => $result['unmatched'],
+            'skipped'   => false,
+        ];
     }
 }

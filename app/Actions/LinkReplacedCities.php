@@ -7,6 +7,7 @@ namespace App\Actions;
 use App\Models\City;
 use App\Models\Commune;
 use Carbon\CarbonImmutable;
+use LogicException;
 
 final readonly class LinkReplacedCities
 {
@@ -30,13 +31,10 @@ final readonly class LinkReplacedCities
             ->get();
 
         foreach ($closed as $city) {
-            $commune = $city->commune;
+            $commune  = $city->commune ?? throw new LogicException('A city always belongs to a commune.');
+            $closedAt = CarbonImmutable::parse($city->valid_to ?? throw new LogicException('The city is not closed.'));
 
-            if (null === $commune || null === $city->valid_to) {
-                continue;
-            }
-
-            $target = $this->targetOf($city, $commune, CarbonImmutable::parse($city->valid_to));
+            $target = $this->targetOf($city, $commune, $closedAt);
 
             if (! $target instanceof City) {
                 continue;

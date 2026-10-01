@@ -32,45 +32,29 @@ final class GeoApiClient
      */
     private function fetch(?string $type): array
     {
-        $url   = config('sources.geo.communes_url');
-        $query = ['fields' => self::FIELDS, 'format' => 'json', 'geometry' => 'centre'];
+        $query = array_filter(
+            ['fields' => self::FIELDS, 'format' => 'json', 'geometry' => 'centre', 'type' => $type],
+            static fn (?string $value): bool => null !== $value,
+        );
 
-        if (null !== $type) {
-            $query['type'] = $type;
-        }
-
-        $items = Http::timeout(120)->get(is_string($url) ? $url : '', $query)->throw()->json();
+        $items = Http::timeout(120)->get(config()->string('sources.geo.communes_url', ''), $query)->throw()->json();
 
         if (! is_array($items)) {
             return [];
         }
 
-        $records = [];
-
-        foreach ($items as $item) {
-            $record = $this->toRecord($item);
-
-            if ($record instanceof GeoCommuneRecord) {
-                $records[] = $record;
-            }
-        }
-
-        return $records;
+        return array_values(array_filter(
+            array_map($this->toRecord(...), $items),
+            static fn (?GeoCommuneRecord $geoCommuneRecord): bool => $geoCommuneRecord instanceof GeoCommuneRecord,
+        ));
     }
 
-    private function toRecord(mixed $item): ?GeoCommuneRecord
+    /**
+     * @return array{latitude: float, longitude: float}|null
+     */
+    private function point(mixed $coordinates): ?array
     {
-        if (! is_array($item)) {
-            return null;
-        }
-
-        $code        = $item['code']         ?? null;
-        $name        = $item['nom']          ?? null;
-        $postalCodes = $item['codesPostaux'] ?? [];
-        $centre      = $item['centre']       ?? null;
-        $coordinates = is_array($centre) ? ($centre['coordinates'] ?? null) : null;
-
-        if (! is_string($code) || ! is_string($name) || ! is_array($postalCodes) || ! is_array($coordinates) || 2 !== count($coordinates)) {
+        if (! is_array($coordinates) || 2 !== count($coordinates)) {
             return null;
         }
 
@@ -80,12 +64,26 @@ final class GeoApiClient
             return null;
         }
 
+        return ['latitude' => (float) $latitude, 'longitude' => (float) $longitude];
+    }
+
+    private function toRecord(mixed $item): ?GeoCommuneRecord
+    {
+        $code        = data_get($item, 'code');
+        $name        = data_get($item, 'nom');
+        $postalCodes = data_get($item, 'codesPostaux', []);
+        $point       = $this->point(data_get($item, 'centre.coordinates'));
+
+        if (! is_string($code) || ! is_string($name) || ! is_array($postalCodes) || null === $point) {
+            return null;
+        }
+
         return new GeoCommuneRecord(
             inseeCode: $code,
             name: $name,
             postalCodes: array_values(array_filter($postalCodes, is_string(...))),
-            latitude: (float) $latitude,
-            longitude: (float) $longitude,
+            latitude: $point['latitude'],
+            longitude: $point['longitude'],
         );
     }
 }

@@ -34,31 +34,25 @@ final readonly class ImportRegions
 
         foreach ($records as $record) {
             $seen[$record->code] = true;
-            $slug                = Str::slug($record->name);
 
-            $region = $current[$record->code] ?? null;
-
-            if (null === $region) {
-                Region::query()->create([
-                    'code'       => $record->code,
-                    'name'       => $record->name,
-                    'slug'       => $slug,
-                    'valid_from' => $isFirstImport ? self::ORIGIN : $effectiveDate->toDateString(),
-                ]);
-
-                if (! $isFirstImport) {
-                    $this->recordReferenceChange->execute($snapshot, ReferenceEntity::Region, $record->code, ChangeType::Created, null, ['name' => $record->name]);
-                }
+            if (isset($current[$record->code])) {
+                $this->update($current[$record->code], $record, $snapshot);
 
                 continue;
             }
 
-            if ($region->name !== $record->name) {
-                $this->recordReferenceChange->execute($snapshot, ReferenceEntity::Region, $record->code, ChangeType::Modified, ['name' => $region->name], ['name' => $record->name]);
-                $region->update(['name' => $record->name, 'slug' => $slug]);
-            }
+            $this->create($record, $isFirstImport, $effectiveDate, $snapshot);
         }
 
+        $this->closeMissing($current, $seen, $effectiveDate, $snapshot);
+    }
+
+    /**
+     * @param array<string, Region> $current
+     * @param array<string, true>   $seen
+     */
+    private function closeMissing(array $current, array $seen, CarbonImmutable $effectiveDate, Snapshot $snapshot): void
+    {
         foreach ($current as $key => $region) {
             $code = (string) $key;
 
@@ -67,7 +61,57 @@ final readonly class ImportRegions
             }
 
             $region->update(['valid_to' => $effectiveDate->toDateString()]);
-            $this->recordReferenceChange->execute($snapshot, ReferenceEntity::Region, $code, ChangeType::Removed, ['name' => $region->name]);
+            $this->recordReferenceChange->execute(
+                $snapshot,
+                ReferenceEntity::Region,
+                $code,
+                ChangeType::Removed,
+                ['name' => $region->name],
+            );
         }
+    }
+
+    private function create(
+        RegionRecord $regionRecord,
+        bool $isFirstImport,
+        CarbonImmutable $effectiveDate,
+        Snapshot $snapshot,
+    ): void {
+        Region::query()->create([
+            'code'       => $regionRecord->code,
+            'name'       => $regionRecord->name,
+            'slug'       => Str::slug($regionRecord->name),
+            'valid_from' => $isFirstImport ? self::ORIGIN : $effectiveDate->toDateString(),
+        ]);
+
+        if ($isFirstImport) {
+            return;
+        }
+
+        $this->recordReferenceChange->execute(
+            $snapshot,
+            ReferenceEntity::Region,
+            $regionRecord->code,
+            ChangeType::Created,
+            null,
+            ['name' => $regionRecord->name],
+        );
+    }
+
+    private function update(Region $region, RegionRecord $regionRecord, Snapshot $snapshot): void
+    {
+        if ($region->name === $regionRecord->name) {
+            return;
+        }
+
+        $this->recordReferenceChange->execute(
+            $snapshot,
+            ReferenceEntity::Region,
+            $regionRecord->code,
+            ChangeType::Modified,
+            ['name' => $region->name],
+            ['name' => $regionRecord->name],
+        );
+        $region->update(['name' => $regionRecord->name, 'slug' => Str::slug($regionRecord->name)]);
     }
 }

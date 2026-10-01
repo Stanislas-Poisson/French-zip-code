@@ -6,6 +6,7 @@ namespace App\Services\Sources;
 
 use App\Contracts\FileDownloader;
 use App\Data\Sources\DownloadedFile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -13,11 +14,7 @@ final class HttpFileDownloader implements FileDownloader
 {
     public function download(string $url, string $destination): DownloadedFile
     {
-        $directory = dirname($destination);
-
-        if (! is_dir($directory) && ! mkdir($directory, 0o755, true) && ! is_dir($directory)) {
-            throw new RuntimeException(sprintf('Cannot create the directory "%s".', $directory));
-        }
+        File::ensureDirectoryExists(dirname($destination));
 
         Http::timeout(300)->sink($destination)->get($url)->throw();
 

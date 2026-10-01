@@ -21,6 +21,7 @@ final readonly class CogVintage
 
     public function url(string $file): string
     {
-        return $this->files[$file] ?? throw new InvalidArgumentException(sprintf('The COG %d has no file "%s".', $this->year, $file));
+        return $this->files[$file]
+            ?? throw new InvalidArgumentException(sprintf('The COG %d has no file "%s".', $this->year, $file));
     }
 }

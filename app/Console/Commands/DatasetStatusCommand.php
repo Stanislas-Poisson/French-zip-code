@@ -21,7 +21,13 @@ final class DatasetStatusCommand extends Command
         $this->line('Current cities: ' . City::query()->current()->count());
 
         foreach (Snapshot::query()->orderByDesc('id')->limit(5)->get() as $snapshot) {
-            $this->line(sprintf('Snapshot #%d %s %s: %s', $snapshot->id, $snapshot->source, $snapshot->version, $snapshot->complete ? 'complete' : 'incomplete'));
+            $this->line(sprintf(
+                'Snapshot #%d %s %s: %s',
+                $snapshot->id,
+                $snapshot->source,
+                $snapshot->version,
+                $snapshot->complete ? 'complete' : 'incomplete',
+            ));
         }
 
         $last = Cache::get(DatasetUpdater::REPORT_CACHE_KEY);

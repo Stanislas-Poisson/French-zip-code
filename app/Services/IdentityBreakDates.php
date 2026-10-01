@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Data\Insee\CommuneMovementRecord;
-use App\Enums\CommuneKind;
 use App\Enums\EventModality;
 
 /**
@@ -30,20 +29,24 @@ final class IdentityBreakDates
 
             $date = $movement->effectiveDate->toDateString();
 
-            if (null !== $movement->codeBefore && $this->isCommune($movement->kindBefore)) {
-                $breaks[$movement->codeBefore][$date] = true;
-            }
-
-            if (null !== $movement->codeAfter && $this->isCommune($movement->kindAfter)) {
-                $breaks[$movement->codeAfter][$date] = true;
+            foreach ($this->communeCodes($movement) as $code) {
+                $breaks[$code][$date] = true;
             }
         }
 
         return $breaks;
     }
 
-    private function isCommune(?CommuneKind $communeKind): bool
+    /**
+     * The codes of a movement that belong to a commune (or an arrondissement), before and after the event.
+     *
+     * @return list<string>
+     */
+    private function communeCodes(CommuneMovementRecord $communeMovementRecord): array
     {
-        return CommuneKind::Commune === $communeKind || CommuneKind::Arrondissement === $communeKind;
+        return array_values(array_filter([
+            $communeMovementRecord->kindBefore?->ownsCode() ? $communeMovementRecord->codeBefore : null,
+            $communeMovementRecord->kindAfter?->ownsCode() ? $communeMovementRecord->codeAfter : null,
+        ], static fn (?string $code): bool => null !== $code));
     }
 }

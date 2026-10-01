@@ -34,9 +34,6 @@ final readonly class ImportCities
             /** @var array<string, int> $communeIds */
             $communeIds = Commune::query()->current()->pluck('id', 'insee_code')->all();
 
-            /** @var array<int, string> $inseeCodes */
-            $inseeCodes = Commune::query()->pluck('insee_code', 'id')->all();
-
             /** @var array<string, City> $current */
             $current = [];
 
@@ -66,48 +63,92 @@ final readonly class ImportCities
 
                 $seen[$key] = true;
 
-                $city = $current[$key] ?? null;
-
-                if (null === $city) {
-                    City::query()->create([
-                        'commune_id'  => $communeId,
-                        'postal_code' => $record->postalCode,
-                        'label'       => $record->label,
-                        'valid_from'  => $isFirstImport ? ImportRegions::ORIGIN : $effectiveDate->toDateString(),
-                    ]);
-                    $created++;
-
-                    if (! $isFirstImport) {
-                        $this->recordReferenceChange->execute($snapshot, ReferenceEntity::City, $record->inseeCode . '-' . $record->postalCode, ChangeType::Created, null, ['label' => $record->label]);
-                    }
+                if (isset($current[$key])) {
+                    $updated += (int) $this->update($current[$key], $record);
 
                     continue;
                 }
 
-                if ($city->label !== $record->label) {
-                    $city->update(['label' => $record->label]);
-                    $updated++;
-                }
-            }
-
-            $closed = 0;
-
-            foreach ($current as $key => $city) {
-                if (isset($seen[$key])) {
-                    continue;
-                }
-
-                $city->update(['valid_to' => $effectiveDate->toDateString()]);
-                $closed++;
-                $this->recordReferenceChange->execute($snapshot, ReferenceEntity::City, ($inseeCodes[$city->commune_id] ?? (string) $city->commune_id) . '-' . $city->postal_code, ChangeType::Removed, ['label' => $city->label]);
+                $this->create($record, $communeId, $isFirstImport, $effectiveDate, $snapshot);
+                $created++;
             }
 
             return [
                 'created'   => $created,
                 'updated'   => $updated,
-                'closed'    => $closed,
+                'closed'    => $this->closeMissing($current, $seen, $effectiveDate, $snapshot),
                 'unmatched' => array_values($unmatched),
             ];
         });
+    }
+
+    /**
+     * @param array<string, City> $current
+     * @param array<string, true> $seen
+     *
+     * @return int number of cities closed
+     */
+    private function closeMissing(array $current, array $seen, CarbonImmutable $effectiveDate, Snapshot $snapshot): int
+    {
+        /** @var array<int, string> $inseeCodes */
+        $inseeCodes = Commune::query()->pluck('insee_code', 'id')->all();
+        $closed     = 0;
+
+        foreach ($current as $key => $city) {
+            if (isset($seen[$key])) {
+                continue;
+            }
+
+            $city->update(['valid_to' => $effectiveDate->toDateString()]);
+            $closed++;
+            $this->recordReferenceChange->execute(
+                $snapshot,
+                ReferenceEntity::City,
+                ($inseeCodes[$city->commune_id] ?? (string) $city->commune_id) . '-' . $city->postal_code,
+                ChangeType::Removed,
+                ['label' => $city->label],
+            );
+        }
+
+        return $closed;
+    }
+
+    private function create(
+        PostalRecord $postalRecord,
+        int $communeId,
+        bool $isFirstImport,
+        CarbonImmutable $effectiveDate,
+        Snapshot $snapshot,
+    ): void {
+        City::query()->create([
+            'commune_id'  => $communeId,
+            'postal_code' => $postalRecord->postalCode,
+            'label'       => $postalRecord->label,
+            'valid_from'  => $isFirstImport ? ImportRegions::ORIGIN : $effectiveDate->toDateString(),
+        ]);
+
+        if ($isFirstImport) {
+            return;
+        }
+
+        $this->recordReferenceChange->execute(
+            $snapshot,
+            ReferenceEntity::City,
+            $postalRecord->inseeCode . '-' . $postalRecord->postalCode,
+            ChangeType::Created,
+            null,
+            ['label' => $postalRecord->label],
+        );
+    }
+
+    private function update(City $city, PostalRecord $postalRecord): bool
+    {
+        if ($city->label === $postalRecord->label) {
+            return false;
+        }
+
+        $city->update(['label' => $postalRecord->label]);
+
+        return true;
     }
 }

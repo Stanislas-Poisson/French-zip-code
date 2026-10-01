@@ -18,12 +18,9 @@ final class NominatimClient
      */
     public function findPostalCode(string $postalCode, string $communeName): ?array
     {
-        $url       = config('sources.nominatim.search_url');
-        $userAgent = config('sources.nominatim.user_agent');
-
-        $results = Http::withUserAgent(is_string($userAgent) ? $userAgent : 'French-zip-code')
+        $results = Http::withUserAgent(config()->string('sources.nominatim.user_agent', 'French-zip-code'))
             ->timeout(30)
-            ->get(is_string($url) ? $url : '', [
+            ->get(config()->string('sources.nominatim.search_url', ''), [
                 'postalcode' => $postalCode,
                 'city'       => $communeName,
                 'country'    => 'France',
@@ -33,12 +30,13 @@ final class NominatimClient
             ->throw()
             ->json();
 
-        $first = is_array($results) ? ($results[0] ?? null) : null;
+        $latitude  = data_get($results, '0.lat');
+        $longitude = data_get($results, '0.lon');
 
-        if (! is_array($first) || ! is_numeric($first['lat'] ?? null) || ! is_numeric($first['lon'] ?? null)) {
+        if (! is_numeric($latitude) || ! is_numeric($longitude)) {
             return null;
         }
 
-        return ['latitude' => (float) $first['lat'], 'longitude' => (float) $first['lon']];
+        return ['latitude' => (float) $latitude, 'longitude' => (float) $longitude];
     }
 }

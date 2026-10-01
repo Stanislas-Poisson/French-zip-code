@@ -36,41 +36,26 @@ final readonly class ImportDepartments
 
         foreach ($records as $record) {
             $seen[$record->code] = true;
-            $regionId            = null === $record->regionCode ? null : ($regionIds[$record->regionCode] ?? null);
-            $slug                = Str::slug($record->name);
+            $regionId            = $regionIds[$record->regionCode ?? ''] ?? null;
 
-            $department = $current[$record->code] ?? null;
-
-            if (null === $department) {
-                Department::query()->create([
-                    'region_id'  => $regionId,
-                    'code'       => $record->code,
-                    'type'       => $record->type,
-                    'name'       => $record->name,
-                    'slug'       => $slug,
-                    'valid_from' => $isFirstImport ? ImportRegions::ORIGIN : $effectiveDate->toDateString(),
-                ]);
-
-                if (! $isFirstImport) {
-                    $this->recordReferenceChange->execute($snapshot, ReferenceEntity::Department, $record->code, ChangeType::Created, null, ['name' => $record->name]);
-                }
+            if (isset($current[$record->code])) {
+                $this->update($current[$record->code], $record, $regionId, $snapshot);
 
                 continue;
             }
 
-            if ($department->name !== $record->name || $department->region_id !== $regionId) {
-                $this->recordReferenceChange->execute(
-                    $snapshot,
-                    ReferenceEntity::Department,
-                    $record->code,
-                    ChangeType::Modified,
-                    ['name' => $department->name, 'region_id' => $department->region_id],
-                    ['name' => $record->name, 'region_id' => $regionId],
-                );
-                $department->update(['name' => $record->name, 'slug' => $slug, 'region_id' => $regionId]);
-            }
+            $this->create($record, $regionId, $isFirstImport, $effectiveDate, $snapshot);
         }
 
+        $this->closeMissing($current, $seen, $effectiveDate, $snapshot);
+    }
+
+    /**
+     * @param array<string, Department> $current
+     * @param array<string, true>       $seen
+     */
+    private function closeMissing(array $current, array $seen, CarbonImmutable $effectiveDate, Snapshot $snapshot): void
+    {
         foreach ($current as $key => $department) {
             $code = (string) $key;
 
@@ -79,7 +64,68 @@ final readonly class ImportDepartments
             }
 
             $department->update(['valid_to' => $effectiveDate->toDateString()]);
-            $this->recordReferenceChange->execute($snapshot, ReferenceEntity::Department, $code, ChangeType::Removed, ['name' => $department->name]);
+            $this->recordReferenceChange->execute(
+                $snapshot,
+                ReferenceEntity::Department,
+                $code,
+                ChangeType::Removed,
+                ['name' => $department->name],
+            );
         }
+    }
+
+    private function create(
+        DepartmentRecord $departmentRecord,
+        ?int $regionId,
+        bool $isFirstImport,
+        CarbonImmutable $effectiveDate,
+        Snapshot $snapshot,
+    ): void {
+        Department::query()->create([
+            'region_id'  => $regionId,
+            'code'       => $departmentRecord->code,
+            'type'       => $departmentRecord->type,
+            'name'       => $departmentRecord->name,
+            'slug'       => Str::slug($departmentRecord->name),
+            'valid_from' => $isFirstImport ? ImportRegions::ORIGIN : $effectiveDate->toDateString(),
+        ]);
+
+        if ($isFirstImport) {
+            return;
+        }
+
+        $this->recordReferenceChange->execute(
+            $snapshot,
+            ReferenceEntity::Department,
+            $departmentRecord->code,
+            ChangeType::Created,
+            null,
+            ['name' => $departmentRecord->name],
+        );
+    }
+
+    private function update(
+        Department $department,
+        DepartmentRecord $departmentRecord,
+        ?int $regionId,
+        Snapshot $snapshot,
+    ): void {
+        if ($department->name === $departmentRecord->name && $department->region_id === $regionId) {
+            return;
+        }
+
+        $this->recordReferenceChange->execute(
+            $snapshot,
+            ReferenceEntity::Department,
+            $departmentRecord->code,
+            ChangeType::Modified,
+            ['name' => $department->name, 'region_id' => $department->region_id],
+            ['name' => $departmentRecord->name, 'region_id' => $regionId],
+        );
+        $department->update([
+            'name'      => $departmentRecord->name,
+            'slug'      => Str::slug($departmentRecord->name),
+            'region_id' => $regionId,
+        ]);
     }
 }

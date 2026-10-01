@@ -26,7 +26,12 @@ final class CityPointCalculator
         foreach ($addresses as $address) {
             $key = $address->inseeCode . '|' . $address->postalCode;
 
-            $groups[$key] ??= ['insee' => $address->inseeCode, 'postal' => $address->postalCode, 'lat' => [], 'lon' => []];
+            $groups[$key] ??= [
+                'insee'  => $address->inseeCode,
+                'postal' => $address->postalCode,
+                'lat'    => [],
+                'lon'    => [],
+            ];
             $groups[$key]['lat'][] = $address->latitude;
             $groups[$key]['lon'][] = $address->longitude;
         }

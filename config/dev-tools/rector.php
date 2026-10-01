@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Zairakai\LaravelDevTools\Rector\RectorBaseConfig;
 
 /**
@@ -60,8 +61,9 @@ if (! class_exists($fqcn, false)) {
     );
 }
 
+// The package skips this rule but registers it in no set: registering it here removes the Rector warning.
 return $fqcn::configure(
     projectRoot: $projectRoot,
     extraPaths: [],
     extraSkips: [],
-);
+)->withRules([AddOverrideAttributeToOverriddenMethodsRector::class]);

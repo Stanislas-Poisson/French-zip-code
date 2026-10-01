@@ -40,7 +40,11 @@ final readonly class ImportOfficialSources
         $unmatched   = [];
 
         if ($importCog) {
-            $this->importCog->execute($fetchedSources->cogFiles, CarbonImmutable::parse($fetchedSources->cogYear . '-01-01'), $fetchedSources->cogSnapshot);
+            $this->importCog->execute(
+                $fetchedSources->cogFiles,
+                CarbonImmutable::parse($fetchedSources->cogYear . '-01-01'),
+                $fetchedSources->cogSnapshot,
+            );
             $fetchedSources->cogSnapshot->update(['imported_at' => now()]);
             $snapshotIds[] = $fetchedSources->cogSnapshot->id;
         }
