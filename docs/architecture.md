@@ -92,6 +92,32 @@ Un simple changement de nom met la ligne à jour sur place (l'ancien nom reste d
 
 Clés étrangères en `*_id`, tables au pluriel, modèles au singulier (`Region`, `Department`, `Commune`, `City`), conformément au handbook. `Commune` est l'entité officielle de l'INSEE ; `City` est l'entrée postale (commune + code postal) que les adresses référencent.
 
+#### Schéma des relations
+
+```
+                 ┌───────────┐ 1     n ┌──────────────┐ 1     n ┌───────────┐ 1     n ┌──────────┐
+  Dataset        │  regions  │────────<│ departments  │────────<│ communes  │────────<│  cities  │
+  (ce dépôt)     └───────────┘         └──────────────┘         └───────────┘         └────┬─────┘
+                  code, name            code, name               insee_code, type          │ id (stable)
+                  valid_from/to         region_id                department_id             │ postal_code
+                                                                 valid_from/to             │ lat / lon
+                                                                                           │ replaced_by_city_id
+                                                                                           │
+  Application    ┌───────────────┐ n     1 ┌────────────────────────────────────────────────┘
+  tierce         │   addresses   │>────────┘
+                 └───────────────┘
+                  line "3 rue Jules Massenet"
+                  city_id  (clé étrangère vers cities.id)
+
+  Historique     commune_events ──► commune_successions       (par code INSEE et date, sans clé étrangère)
+  (ce dépôt)     reference_changes   (départements, régions, codes postaux, comparés d'un import à l'autre)
+                 snapshots           (fichier source importé : version, somme de contrôle, complet ou non)
+```
+
+- Les quatre tables du haut sont **le jeu de données** : elles se lisent de haut en bas (une région a plusieurs départements, etc.) et de bas en haut (`city->commune->department->region`).
+- `addresses` n'est pas dans ce dépôt : c'est la table de l'application qui utilise le jeu de données.
+- Les tables d'historique ne sont pas reliées par clé étrangère aux entités : les codes INSEE peuvent être repris ou supprimés, donc on les retrouve par (code, date).
+
 ### D5 – Algorithme de résolution d'un ancien code
 
 Entrée : un code (INSEE ou postal), une date optionnelle (par défaut : la plus ancienne connue). Sortie : une liste de résultats.
@@ -192,7 +218,54 @@ addresses                              cities
 - `cities.id` est **stable** : on n'efface jamais une ligne, on ferme sa validité (D4). Une adresse enregistrée aujourd'hui garde donc une clé valide demain.
 - Quand une entrée évolue (commune fusionnée, code postal modifié), `replaced_by_city_id` et `commune_successions` donnent le nouvel `id`. La commande de résolution produit la liste « ancien `city_id` → nouveau `city_id` » pour mettre à jour les adresses (un simple `UPDATE ... JOIN`).
 - Depuis une adresse, on remonte `city` → `commune` → `department` → `region`, et inversement, avec des relations Eloquent.
+**Exemple de montage** (application tierce, Laravel) :
+
+```php
+// 1. Enregistrer une adresse : retrouver l'entrée « 37200 Tours » puis créer l'adresse.
+$city = City::current()
+    ->where('postal_code', '37200')
+    ->whereRelation('commune', 'insee_code', '37261')
+    ->firstOrFail();                                   // id 4821, par exemple
+
+$address = Address::create([
+    'line'    => '3 rue Jules Massenet',
+    'city_id' => $city->id,
+]);
+
+// 2. Remonter l'arbre.
+$address->city->postal_code;                           // 37200
+$address->city->commune->name;                         // Tours
+$address->city->commune->department->name;             // Indre-et-Loire
+$address->city->commune->department->region->name;     // Centre-Val de Loire
+$address->city->latitude;                              // 47.3661 (point du 37200)
+
+// 3. Plus tard, après une mise à jour du jeu de données : re-pointer les adresses.
+//    La ligne 4821 a été fermée (valid_to renseigné) et remplacée par la ligne 9100.
+$remap = CityResolver::remap();                        // [4821 => 9100, ...] ; une disparition sans successeur est listée à part
+Address::whereIn('city_id', array_keys($remap))->each(
+    fn (Address $a) => $a->update(['city_id' => $remap[$a->city_id]]),
+);
+```
+
+Pour que la clé étrangère `addresses.city_id → cities.id` fonctionne, **`cities` doit se trouver dans la même base de données que `addresses`**. D'où la question de la distribution (D14).
+
 - La table `addresses` appartient à l'application utilisatrice, pas à ce jeu de données. Ce dépôt fournit les `cities` et les outils de migration. Voir la question 7 du §7.
+
+### D14 – Distribution du jeu de données
+
+Trois usages différents, donc trois canaux possibles :
+
+| Canal | Pour qui | Contenu | Clé étrangère possible ? |
+| :--- | :--- | :--- | :---: |
+| **Fichiers CSV / JSON / SQL** (releases GitHub, data.gouv.fr) | Tout le monde, tous langages | Les tables du jeu de données | Non (hors base) |
+| **Package Composer** (Packagist, namespace Zairakai) | Applications Laravel comme celle des adresses | Modèles, migrations, import, résolution ; les données se chargent dans la base de l'application | **Oui** |
+| **Package npm** | Interfaces JS (auto-complétion de codes postaux) | JSON seulement | Non |
+
+Recommandation :
+
+1. **Ce dépôt** reste le *constructeur* : il importe, calcule, versionne et publie les fichiers. Les exports sont **attachés aux releases GitHub** (générés par la CI au tag) et publiés sur data.gouv.fr, plutôt que commités dans `Exports/` : un CSV de plusieurs Mo recommité à chaque mise à jour alourdit l'historique git.
+2. **Plus tard**, un **package Composer** extrait les modèles, les migrations et l'import pour les applications Laravel. C'est lui qui répond au besoin des adresses avec clé étrangère. Il se décide après le premier import réel, quand le modèle est stabilisé.
+3. **npm : pas pour l'instant.** À envisager seulement si un besoin d'auto-complétion côté navigateur apparaît.
 
 ## 4. Risques et limites
 
@@ -234,3 +307,4 @@ addresses                              cities
 5. **Historique des codes postaux** partiel (il commence au premier instantané, sauf archives retrouvées) : d'accord ?
 6. **Hiérarchie** : rattachement `City` → `Commune` → `Department` → `Region` sans coordonnées pour les départements et régions : d'accord ?
 7. **Adresses** : la table `addresses` reste-t-elle dans les applications utilisatrices (recommandé), ou faut-il aussi un modèle `Address` d'exemple dans ce dépôt ?
+8. **Distribution** : fichiers en releases GitHub et data.gouv.fr maintenant, package Composer plus tard, npm seulement sur besoin (D14) : d'accord ?
