@@ -57,4 +57,10 @@ foreach ($possiblePaths as $path) {
  * ];
  */
 
+// The PHPStan result cache (build/) is made of PHP files that must not be analysed.
+$baseConfig['exclude'] = [
+    ...($baseConfig['exclude'] ?? []),
+    'build',
+];
+
 return $baseConfig;
