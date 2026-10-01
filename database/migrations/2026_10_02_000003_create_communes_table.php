@@ -17,7 +17,7 @@ return new class extends Migration
     {
         Schema::create('communes', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('department_id')->constrained('departments')->restrictOnDelete();
+            $table->foreignId('department_id')->nullable()->constrained('departments')->restrictOnDelete();
             $table->string('insee_code', 5);
             $table->string('kind', 4);
             $table->string('name');

@@ -8,12 +8,15 @@ use App\Enums\CoordinateSource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * A postal entry: a commune and one of its zip codes, with its own GPS point.
  * It is the target of the foreign keys of the addresses of an application.
  *
  * @property int                   $id
+ * @property Carbon                $valid_from
+ * @property Carbon|null           $valid_to
  * @property int                   $commune_id
  * @property string                $postal_code
  * @property string|null           $label

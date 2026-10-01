@@ -7,12 +7,14 @@ namespace App\Models;
 use App\Enums\SuccessionKind;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * Link between a commune code and the code that follows it at a given date.
  * It is derived from the events and used to resolve an old code.
  *
  * @property int            $id
+ * @property Carbon         $effective_date
  * @property string         $from_code
  * @property string|null    $to_code
  * @property SuccessionKind $kind

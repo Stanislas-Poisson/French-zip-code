@@ -8,11 +8,13 @@ use App\Enums\CommuneKind;
 use App\Enums\EventModality;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * A raw event of the INSEE COG movements file (merger, creation, code change...).
  *
  * @property int              $id
+ * @property Carbon           $effective_date
  * @property EventModality    $modality
  * @property CommuneKind|null $kind_before
  * @property string|null      $code_before

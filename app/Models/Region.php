@@ -7,12 +7,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
- * @property int    $id
- * @property string $code
- * @property string $name
- * @property string $slug
+ * @property int         $id
+ * @property Carbon      $valid_from
+ * @property Carbon|null $valid_to
+ * @property string      $code
+ * @property string      $name
+ * @property string      $slug
  */
 final class Region extends Model
 {

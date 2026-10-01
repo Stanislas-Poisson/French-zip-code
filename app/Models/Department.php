@@ -9,9 +9,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int            $id
+ * @property Carbon         $valid_from
+ * @property Carbon|null    $valid_to
  * @property int|null       $region_id
  * @property string         $code
  * @property DepartmentType $type
