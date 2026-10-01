@@ -22,6 +22,9 @@ jobs:
 
       - run: composer install --no-interaction --prefer-dist
 
+      - name: Install markdownlint
+        run: npm install --global markdownlint-cli2
+
       - name: Quality gate (Pint, PHPStan, Markdownlint)
         run: make quality-fast
 
