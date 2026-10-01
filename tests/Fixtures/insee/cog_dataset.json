@@ -1,0 +1,164 @@
+{
+ "resources": [
+  {
+   "title": "Millésime 2026 : Liste des modalités des fichiers téléchargeables du COG",
+   "url": "https://www.insee.fr/fr/information/8740218",
+   "format": "html"
+  },
+  {
+   "title": "Millésime 2026 : Communes des collectivités et territoires français d’outre-mer depuis 1943",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_commune_outremer_depuis_1943.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Liste des communes des collectivités et territoires français d'outre-mer au 01/01/2026",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_commune_comer_2026.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Collectivités et territoires français d’outre-mer depuis 1943",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_tom_depuis_1943.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Liste des collectivités et territoires français d'outre-mer au 01/01/2026",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_comer_2026.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Communes depuis 1943",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_commune_depuis_1943.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Liste des événements survenus aux communes, arrondissements municipaux, communes associées et communes déléguées depuis 1943",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_mvt_commune_2026.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Codes extension et territoire de rattachement",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_codes_extension_2026.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Pays et territoires étrangers depuis 1943",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_pays_et_territoire_depuis_1943.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Pays et territoires étrangers au 01/01/2026",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_pays_territoire_2026.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Liste des collectivités territoriales ayant les compétences départementales au 01/01/2026",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_ctcd_2026.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Liste des régions au 01/01/2026",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_region_2026.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Liste des départements au 01/01/2026",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_departement_2026.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Liste des arrondissements au 01/01/2026",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_arrondissement_2026.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Liste des cantons (et pseudo-cantons) au 01/01/2026",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_canton_2026.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2026 : Liste des communes, arrondissements municipaux, communes déléguées et communes associées au 01/01/2026",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_commune_2026.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Liste des modalités des fichiers téléchargeables du COG",
+   "url": "https://www.insee.fr/fr/information/8377252",
+   "format": "html"
+  },
+  {
+   "title": "Millésime 2025 : Communes des collectivités et territoires français d’outre-mer depuis 1943",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_commune_outremer_depuis_1943.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Liste des communes des collectivités et territoires français d'outre-mer au 01/01/2025",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_commune_comer_2025.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Collectivités et territoires français d’outre-mer depuis 1943",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_tom_depuis_1943.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Liste des collectivités et territoires français d'outre-mer au 01/01/2025",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_comer_2025.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Communes depuis 1943",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_commune_depuis_1943.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Liste des événements survenus aux communes, arrondissements municipaux, communes associées et communes déléguées depuis 1943",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_mvt_commune_2025.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Codes extension et territoire de rattachement",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_codes_extension_2025.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Pays et territoires étrangers depuis 1943",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_pays_et_territoire_depuis_1943.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Pays et territoires étrangers au 01/01/2025",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_pays_territoire_2025.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Liste des collectivités territoriales ayant les compétences départementales au 01/01/2025",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_ctcd_2025.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Liste des régions au 01/01/2025",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_region_2025.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Liste des départements au 01/01/2025",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_departement_2025.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Liste des arrondissements au 01/01/2025",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_arrondissement_2025.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Liste des cantons (et pseudo-cantons) au 01/01/2025",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_canton_2025.csv",
+   "format": "csv"
+  },
+  {
+   "title": "Millésime 2025 : Liste des communes, arrondissements municipaux, communes déléguées et communes associées au 01/01/2025",
+   "url": "https://www.insee.fr/fr/statistiques/fichier/8377162/v_commune_2025.csv",
+   "format": "csv"
+  }
+ ]
+}
