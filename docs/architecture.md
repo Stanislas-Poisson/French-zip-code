@@ -1,6 +1,6 @@
 # Architecture de la refonte (ticket #55)
 
-Ce document décrit les décisions prises pour la refonte de French-zip-code. Il a été rédigé **avant le code** et doit être validé avant toute implémentation. Les chiffres cités ont été mesurés sur les sources réelles le 2026-10-01.
+Ce document décrit les décisions prises pour la refonte de French-zip-code. Il a été rédigé **avant le code** puis validé. Les chiffres cités ont été mesurés sur les sources réelles le 2026-10-01. Le §8 décrit ce qui est implémenté et les écarts avec le plan, le §9 les résultats du premier import réel.
 
 ## 1. Objectifs
 
@@ -308,3 +308,34 @@ Recommandation :
 6. **Hiérarchie** : rattachement `City` → `Commune` → `Department` → `Region` sans coordonnées pour les départements et régions : d'accord ?
 7. **Adresses** : la table `addresses` reste-t-elle dans les applications utilisatrices (recommandé), ou faut-il aussi un modèle `Address` d'exemple dans ce dépôt ?
 8. **Distribution** : fichiers en releases GitHub et data.gouv.fr maintenant, package Composer plus tard, npm seulement sur besoin (D14) : d'accord ?
+
+## 8. État de l'implémentation
+
+Tout ce qui est décrit ci-dessus est implémenté, avec les précisions et écarts suivants.
+
+- **Nom des classes** : les modèles sont `Region`, `Department`, `Commune`, `City`, `Snapshot`, `CommuneEvent`, `CommuneSuccession` et `ReferenceChange`.
+- **Commandes** : `zipcode:update` (`--sync`, `--force`, `--skip-coordinates`), `zipcode:status`, `zipcode:resolve` et `zipcode:export`.
+- **Pipeline** : `FetchSources` → `ImportOfficialSources` (COG, La Poste, centres geo.api, rattachement des villes remplacées) → lot BAN (un job par département) → lot Nominatim (un job par ville sans point) → `ReconcileDataset`. Les étapes longues passent par la queue Redis, supervisée par Horizon (un service `horizon` dans `docker-compose.yml`).
+- **Limitation de débit de Nominatim** : un job attend son tour (middleware `ThrottleNominatim`) au lieu d'être relâché. La queue `nominatim` n'a qu'un seul processus, donc attendre ne gêne personne, et le même code fonctionne avec la queue `sync`.
+- **Tableau de bord Horizon fermé** : le projet n'a pas d'interface web. Horizon est utilisé pour superviser les workers (`make horizon-status`, `make horizon-logs`).
+- **Exports** : CSV et JSON streamés par `zipcode:export`, dump SQL par `mysqldump` (`make export`). Les fichiers sont écrits dans `storage/app/exports` et ne sont plus commités.
+- **Communes sans entrée postale** : Paris, Lyon et Marseille (leurs arrondissements portent les codes postaux) et six territoires sans code postal. C'est signalé par le rapport de rapprochement sans bloquer la publication.
+- **Communes d'outre-mer (COM)** : elles n'ont pas d'historique avant le premier import, car le fichier INSEE d'historique ne couvre que la métropole et les DROM. Elles sont importées avec une validité qui commence en 1943.
+- **Anciens départements** : une commune fermée dont le département n'existe plus dans le COG courant est importée sans département (`department_id` vide).
+- **Reste à faire** : le package Composer destiné aux applications Laravel (D14), la recherche d'archives de la base La Poste pour remonter l'historique des codes postaux, et le calcul des changements entre deux millésimes du COG pour d'anciens millésimes.
+
+## 9. Premier import réel (2026-10-01)
+
+| Étape | Résultat |
+| :--- | :--- |
+| Import du COG 2026 (régions, départements, communes, 13 734 événements, 8 480 successions) | 3,2 secondes |
+| Communes ouvertes | 35 015 (34 875 communes + 45 arrondissements + 95 communes d'outre-mer) |
+| Villes (commune + code postal) | 35 510 pour 35 511 paires distinctes de La Poste |
+| Lot BAN | 110 jobs, 3 workers, 0 échec |
+| Points issus de la BAN | 35 288 (99,4 %) |
+| Points issus de Nominatim | 186 |
+| Points au centre de la commune | 36 |
+| Villes sans point | 0 |
+| Durée totale de la mise à jour | environ 15 minutes |
+
+Les points de Tours obtenus (37000 : 47,3858 ; 0,6886 — 37100 : 47,4164 ; 0,6930 — 37200 : 47,3661 ; 0,7044) sont identiques aux médianes calculées pendant l'étude et cohérents avec ceux de l'ancienne version (écarts de quelques centaines de mètres).
