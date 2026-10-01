@@ -22,7 +22,7 @@ final class GeographyHierarchyTest extends TestCase
     #[Test]
     public function it_allows_an_overseas_collectivity_without_region(): void
     {
-        $collectivity = Department::query()->create([
+        $department = Department::query()->create([
             'region_id'  => null,
             'code'       => '975',
             'type'       => DepartmentType::OverseasCollectivity,
@@ -31,8 +31,8 @@ final class GeographyHierarchyTest extends TestCase
             'valid_from' => '1943-01-01',
         ]);
 
-        $this->assertNull($collectivity->region()->first());
-        $this->assertSame(DepartmentType::OverseasCollectivity, $collectivity->type);
+        $this->assertNull($department->region()->first());
+        $this->assertSame(DepartmentType::OverseasCollectivity, $department->type);
     }
 
     #[Test]

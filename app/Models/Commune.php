@@ -69,10 +69,10 @@ final class Commune extends Model
     /**
      * Only the communes that are currently valid.
      *
-     * @param Builder<Commune> $query
+     * @param Builder<Commune> $builder
      */
-    protected function scopeCurrent(Builder $query): void
+    protected function scopeCurrent(Builder $builder): void
     {
-        $query->whereNull('valid_to');
+        $builder->whereNull('valid_to');
     }
 }

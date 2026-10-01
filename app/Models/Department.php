@@ -63,10 +63,10 @@ final class Department extends Model
     /**
      * Only the departments that are currently valid.
      *
-     * @param Builder<Department> $query
+     * @param Builder<Department> $builder
      */
-    protected function scopeCurrent(Builder $query): void
+    protected function scopeCurrent(Builder $builder): void
     {
-        $query->whereNull('valid_to');
+        $builder->whereNull('valid_to');
     }
 }

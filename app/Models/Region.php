@@ -48,10 +48,10 @@ final class Region extends Model
     /**
      * Only the regions that are currently valid.
      *
-     * @param Builder<Region> $query
+     * @param Builder<Region> $builder
      */
-    protected function scopeCurrent(Builder $query): void
+    protected function scopeCurrent(Builder $builder): void
     {
-        $query->whereNull('valid_to');
+        $builder->whereNull('valid_to');
     }
 }

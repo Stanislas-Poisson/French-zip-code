@@ -23,7 +23,7 @@ final class ValidityTest extends TestCase
     {
         $commune = $this->createCommune();
 
-        $old = City::query()->create([
+        $city = City::query()->create([
             'commune_id'  => $commune->id,
             'postal_code' => '37000',
             'valid_from'  => '2000-01-01',
@@ -36,9 +36,9 @@ final class ValidityTest extends TestCase
             'valid_from'  => '2026-01-01',
         ]);
 
-        $old->update(['replaced_by_city_id' => $new->id]);
+        $city->update(['replaced_by_city_id' => $new->id]);
 
-        $this->assertSame($new->id, $old->refresh()->replacedBy?->id);
+        $this->assertSame($new->id, $city->refresh()->replacedBy?->id);
         $this->assertSame([$new->id], City::query()->current()->pluck('id')->all());
     }
 
