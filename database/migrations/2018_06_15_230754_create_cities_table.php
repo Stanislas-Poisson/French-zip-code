@@ -4,12 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCitiesTable extends Migration
+return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up()
+    public function up(): void
     {
         Schema::create('cities', function (Blueprint $table) {
             $table->increments('id');
@@ -18,8 +15,8 @@ class CreateCitiesTable extends Migration
             $table->string('zip_code', 5)->nullable();
             $table->string('name', 255);
             $table->string('slug', 255);
-            $table->float('gps_lat', 16, 14);
-            $table->float('gps_lng', 17, 14);
+            $table->double('gps_lat');
+            $table->double('gps_lng');
             $table->boolean('multi')->default(false);
 
             $table->foreign('department_code')
@@ -28,11 +25,8 @@ class CreateCitiesTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('cities');
     }
-}
+};

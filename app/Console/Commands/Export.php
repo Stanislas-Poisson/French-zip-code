@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Cities;
-use App\Regions;
-use App\Departments;
-use League\Csv\Writer;
+use App\Models\Cities;
+use App\Models\Departments;
+use App\Models\Regions;
 use Illuminate\Console\Command;
+use League\Csv\Writer;
 
 class Export extends Command
 {
@@ -25,24 +25,14 @@ class Export extends Command
     protected $description = 'Export the build to files';
 
     protected $headers = [
-        'Regions'     => ['id', 'code', 'name', 'slug'],
+        'Regions' => ['id', 'code', 'name', 'slug'],
         'Departments' => ['id', 'region_code', 'code', 'name', 'slug'],
-        'Cities'      => ['id', 'department_code', 'insee_code', 'zip_code', 'name', 'slug', 'gps_lat', 'gps_lng'],
+        'Cities' => ['id', 'department_code', 'insee_code', 'zip_code', 'name', 'slug', 'gps_lat', 'gps_lng'],
     ];
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     protected function saveCsvTable(string $tableName, $entities)
     {
-        $file= base_path('Exports/csv/'.strtolower($tableName).'.csv');
+        $file = base_path('Exports/csv/'.strtolower($tableName).'.csv');
 
         $csv = Writer::createFromPath($file, 'w');
         $csv->insertOne($this->headers[$tableName]);
