@@ -8,6 +8,7 @@ Ce document décrit les décisions prises pour la refonte de French-zip-code. Il
 - Récupérer et mettre à jour les fichiers sources automatiquement.
 - Garder l'historique des évolutions (fusions, créations, changements de code, suppressions) pour qu'un utilisateur puisse migrer ses propres enregistrements : à partir d'un ancien code, savoir vers quel(s) code(s) pointer aujourd'hui, avec le(s) code(s) postal(aux) correspondant(s).
 - Exporter en CSV, JSON et SQL, y compris l'historique.
+- Servir de **cible de clés étrangères** : une application doit pouvoir enregistrer une adresse (`3 rue Jules Massenet`) et la rattacher par une clé étrangère à l'entrée « 37200 Tours » (voir D13). Les identifiants doivent donc rester stables dans le temps.
 
 ## 2. Sources de données (vérifiées)
 
@@ -51,27 +52,45 @@ Régions, départements (dont COM comme collectivités), communes (type `COM`) e
 
 ### D3 – GPS : un point par couple commune + code postal
 
-- **Calcul** : pour chaque couple (code INSEE, code postal), la **médiane** de la latitude et de la longitude des adresses BAN positionnées. La médiane résiste aux adresses mal placées, ce que la moyenne ne fait pas.
-- **Qualité** : on stocke le nombre d'adresses utilisées (`address_count`) pour que l'utilisateur puisse juger la fiabilité d'un point (1 007 adresses pour 37200, mais parfois 3 ou 4 pour un petit code postal).
-- **Repli** : si la BAN n'a aucune adresse pour un couple (communes sans fichier BAN : 984, 986, 989 ; codes postaux sans adresse), on utilise le centre de la commune fourni par geo.api, et la colonne `coordinate_source` vaut `commune_centre` au lieu de `ban`.
-- **Rattachement hiérarchique** : chaque ligne est liée à sa commune, puis au département, puis à la région (`commune_postal_code` → `communes` → `departments` → `regions`). Une requête par code postal remonte donc tout l'arbre.
-- Les coordonnées des départements et des régions ne sont pas calculées dans cette version (le besoin exprimé est le rattachement). À confirmer.
+Chaîne de décision, du plus fiable au moins précis :
+
+1. **BAN** (médiane des adresses du couple commune + code postal) : source principale.
+2. **Nominatim** (recherche `postalcode` + `city`) pour les couples sans adresse BAN.
+3. **Centre de la commune** (geo.api.gouv.fr) en dernier repli.
+
+La colonne `coordinate_source` (`ban`, `nominatim` ou `commune_centre`) dit toujours d'où vient le point, et `address_count` donne le nombre d'adresses BAN utilisées.
+
+**Pourquoi la BAN en premier, et pas les API.** Le test sur Tours (2026-10-01) donne :
+
+| Code postal | BAN (médiane) | Nominatim (`postalcode`) | Géoplateforme (`municipality` + `postcode`) |
+| :--- | :--- | :--- | :--- |
+| 37000 | 47,3858 ; 0,6886 | 47,3847 ; 0,6905 | 47,3955 ; 0,6958 |
+| 37100 | 47,4164 ; 0,6930 | 47,4189 ; 0,7024 | 47,3955 ; 0,6958 |
+| 37200 | 47,3661 ; 0,7044 | 47,3659 ; 0,6889 | 47,3955 ; 0,6958 |
+
+- La **Géoplateforme ignore le code postal** et renvoie le centre de la commune pour les trois : inutilisable ici.
+- **Nominatim** donne des points distincts et proches de la BAN (200 m à 1,5 km d'écart), mais il est limité à **1 requête par seconde**. Pour les 39 192 couples cela représente environ **11 heures**, contre une passe sur 101 fichiers pour la BAN. Il dépend aussi de la couverture OpenStreetMap, et les usages massifs sont déconseillés par sa politique.
+- La **BAN** est l'adresse officielle : le point est dérivé d'adresses réelles de ce code postal dans cette commune, de façon déterministe et reproductible, avec un indicateur de qualité. Ce ne sont pas des points supposés : ce sont des adresses géocodées par l'État.
+- Nominatim reste utile comme **repli** pour les quelques couples sans adresse BAN. Il ne traite alors qu'un petit nombre de cas, un job par couple, avec rate limiting à 1 requête par seconde.
+
+**Rattachement hiérarchique** : chaque `City` est liée à sa `Commune`, puis au `Department`, puis à la `Region`. On remonte et on descend l'arbre avec des relations Eloquent.
 
 ### D4 – Modèle de données
 
-Toutes les entités sont versionnées par une période de validité.
+**Principe : on ne supprime et on ne recycle jamais un identifiant.** Une entité qui disparaît ou change de sens voit sa période de validité close (`valid_to`) et, si elle a un successeur, un lien vers lui. C'est ce qui permet à une application de garder ses clés étrangères et de les recoller ensuite.
 
 - `regions` : id, code, name, slug, valid_from, valid_to.
 - `departments` : id, region_id, code, name, slug, valid_from, valid_to.
-- `communes` : id, department_id, insee_code, type (`COM` ou `ARM`), name, slug, latitude, longitude, valid_from, valid_to.
-- `postal_codes` : id, code.
-- `commune_postal_code` : commune_id, postal_code_id, latitude, longitude, address_count, coordinate_source (`ban` ou `commune_centre`), valid_from, valid_to. C'est la table centrale du jeu de données : une ligne par couple commune + code postal avec son point GPS.
-- `snapshots` : id, source, version, checksum, fetched_at, imported_at (un enregistrement par fichier importé).
+- `communes` : id, department_id, insee_code, type (`COM` ou `ARM`), name, slug, centre_latitude, centre_longitude, valid_from, valid_to.
+- `cities` : **une ligne par couple commune + code postal**, c'est-à-dire « 37200 Tours ». id (stable), commune_id, postal_code, label (libellé d'acheminement), latitude, longitude, address_count, coordinate_source, valid_from, valid_to, replaced_by_city_id (nullable).
+- `snapshots` : id, source, version, checksum, fetched_at, imported_at, complete (booléen, voir D8).
 - `commune_events` : événements INSEE bruts (modalité, date d'effet, type et code avant, type et code après, libellés), alimentés par `v_mvt_commune`.
 - `commune_successions` : table dérivée utilisée par la résolution (code d'origine, validité d'origine, code d'arrivée, nature : renommée, remplacée, absorbée, scindée, supprimée, code repris, date d'effet).
-- `reference_changes` : changements détectés par comparaison pour les départements, les régions et les codes postaux (entité, type de changement, instantané avant et après).
+- `reference_changes` : changements détectés par comparaison pour les départements, les régions et les codes postaux.
 
-Clés étrangères en `*_id`, tables au pluriel, modèles au singulier (`Region`, `Department`, `Commune`, `PostalCode`), conformément au handbook. **Le nom `City` devient `Commune`** pour rester fidèle au vocabulaire officiel.
+Un simple changement de nom met la ligne à jour sur place (l'ancien nom reste dans `commune_events`). Une fusion, une scission, une reprise de code ou un changement de code postal ferment la ligne et en ouvrent une nouvelle.
+
+Clés étrangères en `*_id`, tables au pluriel, modèles au singulier (`Region`, `Department`, `Commune`, `City`), conformément au handbook. `Commune` est l'entité officielle de l'INSEE ; `City` est l'entrée postale (commune + code postal) que les adresses référencent.
 
 ### D5 – Algorithme de résolution d'un ancien code
 
@@ -81,6 +100,8 @@ Entrée : un code (INSEE ou postal), une date optionnelle (par défaut : la plus
 2. Appliquer chronologiquement les successions postérieures à cette date, en suivant les chaînes A → B → C.
 3. Classer chaque branche : inchangée, renommée, remplacée (1 → 1), absorbée (N → 1), scindée (1 → N), **code repris par une autre entité** (cas 85213), **supprimée sans successeur**.
 4. Pour chaque commune d'arrivée, joindre ses codes postaux actuels.
+
+**Remonter dans le temps.** Les périodes de validité permettent de retrouver l'état à n'importe quelle date (`as_of`). Pour les communes, départements et régions, le COG fournit toute la période depuis 1943 (`v_commune_depuis_1943`, `v_mvt_commune`) et les anciens millésimes du COG (1999 à 2024) sont téléchargeables : on peut tout reconstituer. Pour les codes postaux, l'historique commence au premier instantané conservé ; l'import cherchera à l'implémentation d'éventuelles versions archivées de la base La Poste pour remonter plus loin, sans le promettre.
 
 Une disparition sans successeur est toujours signalée explicitement (jamais renvoyée comme « inconnu »). Les résultats portent la date d'effet et la nature du changement.
 
@@ -93,7 +114,7 @@ Pas d'événements officiels. À chaque import La Poste, comparer avec l'instant
 1. **Détection** : interroger data.gouv.fr (COG), `Last-Modified` (La Poste) et `ETag` (geo.api). Aucune action si les sommes de contrôle sont identiques.
 2. **Téléchargement** : fichiers sauvegardés par version dans `storage/app/sources/{source}/{version}/`, avec somme de contrôle. Pour la BAN, un fichier par département, retéléchargé seulement si son `Last-Modified` a changé.
 3. **Analyse** : lecteurs CSV et JSON en flux, un par source, derrière une interface commune. Gestion du cp1252 de La Poste.
-4. **Import** : idempotent (rejouable sans doublon). Les entités, les événements et les successions sont importés dans une transaction. Les coordonnées BAN sont calculées **département par département** (voir D8), puis écrites dans `commune_postal_code`.
+4. **Import** : idempotent (rejouable sans doublon). Les entités, les événements et les successions sont importés dans une transaction. Les coordonnées BAN sont calculées **département par département** (voir D8), puis écrites dans `cities`.
 5. **Comparaison** : calcul de `reference_changes`.
 6. **Export** : voir D9.
 
@@ -101,21 +122,29 @@ Le tout est lancé par une commande unique, planifiable avec le scheduler Larave
 
 ### D8 – Jobs, Redis et Horizon
 
-Les coordonnées par code postal rendent les jobs **vraiment utiles** : il y a 101 fichiers BAN (environ 940 Mo compressés, 26 millions d'adresses) à télécharger et à analyser en flux, ce qui est lourd en bande passante et en processeur. Le travail se découpe naturellement **par département**.
+**Un job traite une unité de travail**, avec deux niveaux selon la source :
 
-- Un job par département (`ComputePostalCodeCoordinates`), exécutés en parallèle par plusieurs workers. Chaque job est indépendant, idempotent et reprenable.
-- Les étapes sont chaînées : sources officielles (COG, La Poste, geo.api) → import des entités → lot de jobs BAN par département (`Bus::batch`) → calcul des changements → exports.
-- Pas de rate limiting à gérer côté BAN (téléchargements de fichiers, pas d'appels API répétés), mais un nombre de workers raisonnable pour ne pas saturer la bande passante.
-- **Horizon** : utile ici pour suivre un lot de 101 jobs (progression, échecs, reprise), contrairement à ce que je pensais avant d'avoir testé la BAN. Je le recommande, avec un **service Redis**. L'alternative sans Horizon reste de simples `queue:work` Redis.
+- **BAN : un job par département** (101 jobs). L'unité naturelle est le fichier du département : téléchargement, lecture en flux, calcul des médianes pour tous les couples commune + code postal de ce département.
+- **Repli Nominatim : un job par couple** commune + code postal sans adresse BAN. Rate limiting à 1 requête par seconde (`Redis::throttle`).
+- Les étapes se chaînent : sources officielles → import des entités → lot BAN → lot de replis → calcul des changements → exports.
+
+**Exhaustivité garantie** : avec de la concurrence, rien ne doit être perdu en silence.
+
+1. Avant de lancer les jobs, on construit la **liste attendue** : tous les couples (code INSEE, code postal) issus de La Poste croisés avec le COG, et tous les départements et régions du COG.
+2. Chaque job enregistre son résultat (point, source ou échec explicite) ; aucun couple n'est « oublié ».
+3. En fin de lot (`then` / `finally` de `Bus::batch`), un contrôle de **rapprochement** compare la liste attendue et le résultat : chaque couple doit avoir un point (BAN, Nominatim ou centre de la commune), et chaque département et région attendus doivent être présents. Les écarts sont listés.
+4. Le `snapshots.complete` ne passe à vrai que si le rapprochement est total. Tant que ce n'est pas le cas, l'import n'est pas publié et les exports ne sont pas régénérés.
+
+**Horizon** : retenu pour suivre un lot de plus de 100 jobs (progression, échecs, reprise), avec un service **Redis**. Les jobs sont idempotents et reprenables.
 
 ### D9 – Exports
 
 Dans `Exports/` :
 
-- Jeu courant : `regions`, `departments`, `communes`, `postal_codes`, `commune_postal_code` (CSV, JSON, SQL). `commune_postal_code` contient une ligne par couple commune + code postal avec latitude, longitude, nombre d'adresses et source du point, rattachée à la commune, au département et à la région.
+- Jeu courant : `regions`, `departments`, `communes`, `cities` (CSV, JSON, SQL). `cities` contient une ligne par couple commune + code postal avec latitude, longitude, nombre d'adresses et source du point, rattachée à la commune, au département et à la région.
 - Historique : `commune_successions` (CSV, JSON) : *ancien code, période de validité, nouveau code, nature, date d'effet*.
 - Changements par millésime : `changes/{AAAA}` (créé, supprimé, renommé, fusionné, remplacé).
-- Changements de codes postaux : `postal_code_changes` (CSV, JSON).
+- Changements de codes postaux : `city_changes` (CSV, JSON), avec l'ancien et le nouvel identifiant de `City`.
 
 Une commande `zipcode:resolve {code} {--date=}` permet de tester la résolution. Le README décrit comment un utilisateur migre ses données avec ces fichiers.
 
@@ -128,7 +157,7 @@ app/
   Data/                   # DTO readonly (CommuneRecord, EventRecord, ...)
   Enums/                  # EventModality, SuccessionKind, EntityType
   Jobs/                   # un job par étape du pipeline
-  Models/                 # Region, Department, Commune, PostalCode, ...
+  Models/                 # Region, Department, Commune, City, ...
   Services/Sources/       # InseeCogClient, LaPosteClient, GeoApiClient
   Services/Parsers/       # parseurs CSV et JSON en flux
   Actions/                # ImportCog, ImportPostalCodes, ComputeChanges, ResolveCode, ExportDataset
@@ -147,6 +176,24 @@ Règles : `declare(strict_types=1)`, classes `final`, types explicites, commande
 
 Suppression de `config/auth.php`, `mail.php`, `session.php`, des doublons `database/export/*.sql`, de `storage/builder`, de `CHANGELOG.md` (remplacé par les releases GitHub générées depuis les Conventional Commits), des dossiers `storage/framework` inutiles, et de tout `dd()` ou `DB::statement` modifiant le schéma à la volée.
 
+### D13 – Cible d'usage : rattacher des adresses
+
+L'objectif final est qu'une application enregistre des adresses et les relie à l'entrée postale correspondante :
+
+```
+addresses                              cities
+  id                                     id            (stable, jamais recyclé)
+  line  "3 rue Jules Massenet"           commune_id
+  city_id  ───── clé étrangère ─────►    postal_code   "37200"
+                                         label         "TOURS"
+                                         latitude / longitude
+```
+
+- `cities.id` est **stable** : on n'efface jamais une ligne, on ferme sa validité (D4). Une adresse enregistrée aujourd'hui garde donc une clé valide demain.
+- Quand une entrée évolue (commune fusionnée, code postal modifié), `replaced_by_city_id` et `commune_successions` donnent le nouvel `id`. La commande de résolution produit la liste « ancien `city_id` → nouveau `city_id` » pour mettre à jour les adresses (un simple `UPDATE ... JOIN`).
+- Depuis une adresse, on remonte `city` → `commune` → `department` → `region`, et inversement, avec des relations Eloquent.
+- La table `addresses` appartient à l'application utilisatrice, pas à ce jeu de données. Ce dépôt fournit les `cities` et les outils de migration. Voir la question 7 du §7.
+
 ## 4. Risques et limites
 
 - **Historique des codes postaux partiel** : il commence au premier instantané (D6).
@@ -156,7 +203,8 @@ Suppression de `config/auth.php`, `mail.php`, `session.php`, des doublons `datab
 - **Dépendance à la structure des fichiers INSEE** : un changement de colonnes d'un millésime à l'autre doit faire échouer l'import avec un message clair (validation de l'en-tête).
 - **Volume de la BAN** : 940 Mo compressés au total. Les téléchargements sont mis en cache par département et ne sont refaits que si le fichier a changé ; la mise à jour des coordonnées peut être mensuelle plutôt que quotidienne.
 - **Qualité des points BAN** : un code postal avec très peu d'adresses donne un point peu fiable. `address_count` permet de le voir et un seuil de repli peut être défini (à fixer à l'implémentation).
-- **Zones sans fichier BAN** (984, 986, 989) et codes postaux sans adresse : repli sur le centre de la commune, signalé par `coordinate_source`.
+- **Zones sans fichier BAN** (984, 986, 989) et codes postaux sans adresse : repli Nominatim puis centre de la commune, signalé par `coordinate_source`.
+- **Nominatim** : 1 requête par seconde et usage massif déconseillé ; il ne sert que de repli ciblé.
 - **Licences** : COG, La Poste et la BAN sont sous Licence Ouverte ; les mentionner dans le README et les exports.
 
 ## 5. Plan d'implémentation
@@ -166,7 +214,7 @@ Suppression de `config/auth.php`, `mail.php`, `session.php`, des doublons `datab
 3. Schéma, modèles et migrations.
 4. Clients et parseurs des trois sources, avec tests sur de petits jeux de données de test.
 5. Import du COG et construction des événements et des successions.
-6. Import La Poste et geo.api, calcul des coordonnées par code postal à partir de la BAN (jobs par département), calcul de `reference_changes`.
+6. Import La Poste et geo.api, calcul des coordonnées par code postal (BAN par département, repli Nominatim, repli centre de la commune), rapprochement d'exhaustivité, calcul de `reference_changes`.
 7. Résolution et commande `zipcode:resolve`.
 8. Exports, README et documentation de migration pour les utilisateurs.
 9. Premier import réel complet, comparaison avec le jeu publié, puis mise à jour de `Exports/`.
@@ -179,9 +227,10 @@ Suppression de `config/auth.php`, `mail.php`, `session.php`, des doublons `datab
 
 ## 7. Décisions à valider
 
-1. **GPS par code postal calculé depuis la BAN** (médiane des adresses, repli sur le centre de la commune) : d'accord ?
-2. **Queue** : Redis avec Horizon pour le lot de 101 jobs par département (recommandé) ou simples workers ?
-3. **Nom `Commune`** à la place de `City` dans le code, les tables et les exports : d'accord ?
+1. **GPS** : BAN en premier, Nominatim en repli, centre de la commune en dernier repli : d'accord ?
+2. **Modèle** : `Commune` (entité INSEE) et `City` (commune + code postal, cible des clés étrangères des adresses), avec identifiants stables et fermeture de validité plutôt que suppression : d'accord ?
+3. **Queue** : Redis avec Horizon, un job par département pour la BAN et un job par couple pour le repli : d'accord ?
 4. **Périmètre** : communes et arrondissements municipaux dans le jeu principal, communes déléguées et associées dans l'historique seulement : d'accord ?
-5. **Historique des codes postaux** partiel, à documenter comme tel : d'accord ?
-6. **Hiérarchie** : le besoin « remonter au département puis à la région » est traité comme un **rattachement** (code postal → commune → département → région). Faut-il aussi des coordonnées pour les départements et les régions ?
+5. **Historique des codes postaux** partiel (il commence au premier instantané, sauf archives retrouvées) : d'accord ?
+6. **Hiérarchie** : rattachement `City` → `Commune` → `Department` → `Region` sans coordonnées pour les départements et régions : d'accord ?
+7. **Adresses** : la table `addresses` reste-t-elle dans les applications utilisatrices (recommandé), ou faut-il aussi un modèle `Address` d'exemple dans ce dépôt ?
