@@ -21,10 +21,14 @@ return [
 
     'ban' => [
         'base_url' => env('BAN_BASE_URL', 'https://adresse.data.gouv.fr/data/ban/adresses/latest/csv'),
+        // A zip code with fewer addresses than this keeps its fallback point.
+        'minimum_addresses' => 1,
     ],
 
     'nominatim' => [
         'search_url' => env('NOMINATIM_SEARCH_URL', 'https://nominatim.openstreetmap.org/search'),
         'user_agent' => env('NOMINATIM_USER_AGENT', 'French-zip-code'),
+        // A point farther than this from the centre of the commune is considered as a wrong match.
+        'max_distance_km' => 30,
     ],
 ];
