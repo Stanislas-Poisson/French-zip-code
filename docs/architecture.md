@@ -22,18 +22,18 @@ Fichiers COG retenus (millésime M) : `v_region_M`, `v_departement_M`, `v_commun
 
 ### Constats qui changent la conception
 
-1. **geo.api.gouv.fr renvoie toutes les communes en une seule requête** (34 969 communes, 5,6 Mo, 0,3 s) avec centre GPS et codes postaux. Elle remplace les 35 000 appels par commune de l'ancienne version, mais **son point est celui de la commune, pas du code postal** : il ne suffit donc pas (voir 8).
+1. **geo.api.gouv.fr renvoie toutes les communes en une seule requête** (34 969 communes, 5,6 Mo, 0,3 s) avec centre GPS et codes postaux. Elle remplace les 35 000 appels par commune de l'ancienne version, mais **son point est celui de la commune, pas du code postal** : il ne suffit donc pas (voir 7).
 2. **Les événements communaux existent déjà en base officielle** : `v_mvt_commune_2026.csv` contient 13 734 événements de 1943 à 2026, avec les codes de modalité de l'INSEE (10 changement de nom, 20 création, 21 rétablissement, 30 suppression, 31 fusion simple, 32 création de commune nouvelle, 33 fusion association, 34 fusion-association → fusion simple, 35 suppression de commune déléguée, 41 changement de code (département), 50 changement de code (chef-lieu), 70 à 72 communes déléguées). Pour les communes, **l'historique n'a pas à être reconstruit par comparaison**.
 3. **Un code INSEE peut changer de sens dans le temps.** Cas Saint-Florent-des-Bois : au 2016-01-01, la commune nouvelle « Rives de l'Yon » a repris le code **85213**, qui était celui de Saint-Florent-des-Bois, et Chaillé-sous-les-Ormeaux (85043) a été absorbée. Le code 85213 existe toujours, mais désigne une autre entité. Une table `ancien code → nouveau code` ne suffit donc pas : il faut raisonner en **(code, date)**.
 4. **L'INSEE ne publie aucun événement pour les départements, les régions ni les codes postaux.** Leur suivi se fait par comparaison entre deux instantanés (voir §5.3). Il est moins fiable et ne commence qu'à notre premier import.
 5. **Les codes postaux sont une relation N-N.** 387 communes ont plusieurs codes postaux (jusqu'à 21), et 4 205 codes postaux sur 6 328 couvrent plusieurs communes. L'ancien modèle dupliquait la commune par code postal.
 6. **geo.api.gouv.fr et La Poste divergent** sur 9 communes, toutes en outre-mer (98xxx). 5 communes de geo n'ont aucun code postal. 46 codes La Poste sont des arrondissements municipaux (Marseille, Lyon, Paris) absents des communes de geo, qui les expose séparément (`type=arrondissement-municipal`, 45 entrées).
-8. **Il faut un point GPS par code postal, pas seulement par commune.** Exemple Tours (37261) : 37000, 37100 et 37200 doivent avoir chacun leur point. Deux sources testées le 2026-10-01 :
+7. **Il faut un point GPS par code postal, pas seulement par commune.** Exemple Tours (37261) : 37000, 37100 et 37200 doivent avoir chacun leur point. Deux sources testées le 2026-10-01 :
    - La Poste (`_geopoint`) donne le **même point pour les trois codes postaux** (47,3943 ; 0,6949) : inutilisable.
    - La **BAN** (Base Adresse Nationale), par département, donne des points distincts et cohérents en prenant la médiane des adresses de chaque code postal : 37000 → 47,3858 ; 0,6886 (18 746 adresses), 37100 → 47,4164 ; 0,6930 (10 489), 37200 → 47,3661 ; 0,7044 (1 007). Le fichier du département 37 pèse 9,9 Mo (275 168 adresses), toute la France 940 Mo compressés.
    - La BAN couvre la Corse, les DROM et les COM 975, 977, 978, 987 et 988. Les fichiers 984, 986 et 989 sont vides : prévoir un repli.
    - Les adresses BAN portent aussi `code_insee_ancienne_commune` : on peut rattacher un code postal à une ancienne commune fusionnée, ce qui sert directement à la résolution historique.
-9. **Les communes déléguées et associées** (COMD, COMA : 2 576 lignes) ne sont pas renvoyées par geo.api en masse. Elles servent à l'historique et à la résolution, pas au jeu de données principal.
+8. **Les communes déléguées et associées** (COMD, COMA : 2 576 lignes) ne sont pas renvoyées par geo.api en masse. Elles servent à l'historique et à la résolution, pas au jeu de données principal.
 
 ## 3. Décisions
 
