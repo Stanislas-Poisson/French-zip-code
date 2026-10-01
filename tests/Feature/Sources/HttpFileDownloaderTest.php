@@ -9,6 +9,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
 use Tests\TestCase;
 
 final class HttpFileDownloaderTest extends TestCase
@@ -52,5 +53,29 @@ final class HttpFileDownloaderTest extends TestCase
 
         $this->app->make(FileDownloader::class)
             ->download('https://example.test/file.csv', $this->directory . '/insee/2026/file.csv');
+    }
+
+    #[Test]
+    public function it_fails_when_the_downloaded_file_cannot_be_read(): void
+    {
+        Http::fake(['*' => Http::response('content')]);
+
+        // The destination sits under a regular file: nothing can be written there.
+        File::ensureDirectoryExists($this->directory);
+        file_put_contents($this->directory . '/blocker', 'x');
+
+        // The warnings are silenced to reach the guard, instead of being turned into exceptions.
+        set_error_handler(static fn (): bool => true);
+
+        try {
+            $this->expectException(RuntimeException::class);
+            $this->expectExceptionMessage('Cannot read the downloaded file');
+
+            $this->app->make(FileDownloader::class)
+                ->download('https://example.test/file.csv', $this->directory . '/blocker/file.csv');
+        }
+        finally {
+            restore_error_handler();
+        }
     }
 }

@@ -110,6 +110,16 @@ final class ResolveCityTest extends TestCase
         $this->assertSame([$new->id], array_map(static fn (City $city): int => $city->id, $cityResolution->cities));
     }
 
+    #[Test]
+    public function it_warns_when_the_zip_code_is_not_used_any_more_by_the_communes(): void
+    {
+        $this->city('85213', '85310');
+
+        $this->command('zipcode:resolve', ['code' => '85043', '--zip' => '99999'])
+            ->expectsOutputToContain('The zip code 99999 is not used any more')
+            ->assertSuccessful();
+    }
+
     private function city(string $inseeCode, string $postalCode, ?string $validTo = null): City
     {
         $commune = Commune::query()->where('insee_code', $inseeCode)->orderByDesc('valid_from')->firstOrFail();

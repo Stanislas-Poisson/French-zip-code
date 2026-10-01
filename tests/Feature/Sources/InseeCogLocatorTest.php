@@ -13,6 +13,17 @@ use Tests\TestCase;
 final class InseeCogLocatorTest extends TestCase
 {
     #[Test]
+    public function it_fails_when_the_dataset_has_no_resources_at_all(): void
+    {
+        Http::fake(['*' => Http::response(['title' => 'COG'])]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('The COG dataset has no resources.');
+
+        $this->app->make(InseeCogLocator::class)->latest();
+    }
+
+    #[Test]
     public function it_fails_when_the_dataset_has_no_vintage(): void
     {
         Http::fake(['*' => Http::response(['resources' => []])]);
@@ -20,6 +31,22 @@ final class InseeCogLocatorTest extends TestCase
         $this->expectException(RuntimeException::class);
 
         $this->app->make(InseeCogLocator::class)->latest();
+    }
+
+    #[Test]
+    public function it_ignores_a_resource_with_an_unexpected_title_or_file_name(): void
+    {
+        Http::fake(['*' => Http::response(['resources' => [
+            ['url' => 'https://example.test/v_region_2026.csv'],
+            ['title' => 'Documentation', 'url' => 'https://example.test/v_region_2026.csv'],
+            ['title' => 'Millésime 2026 : région', 'url' => 'https://example.test/readme.txt'],
+            ['title' => 'Millésime 2026 : région', 'url' => 'https://example.test/v_region_2026.csv'],
+        ]])]);
+
+        $cogVintage = $this->app->make(InseeCogLocator::class)->latest();
+
+        $this->assertSame(2026, $cogVintage->year);
+        $this->assertSame(['v_region'], array_keys($cogVintage->files));
     }
 
     #[Test]

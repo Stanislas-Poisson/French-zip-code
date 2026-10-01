@@ -103,6 +103,21 @@ final class ResolveCommuneCodeTest extends TestCase
         $this->assertEqualsCanonicalizing(['15141', '15031'], $codeResolution->currentCodes);
     }
 
+    #[Test]
+    public function it_walks_a_code_reached_by_two_paths_only_once(): void
+    {
+        $this->createCommune('40004');
+        $this->succession('40001', '40002', SuccessionKind::Split, '2020-01-01');
+        $this->succession('40001', '40003', SuccessionKind::Split, '2020-01-01');
+        $this->succession('40002', '40004', SuccessionKind::Absorbed, '2021-01-01');
+        $this->succession('40003', '40004', SuccessionKind::Absorbed, '2021-01-01');
+
+        $codeResolution = $this->app->make(ResolveCommuneCode::class)->execute('40001');
+
+        $this->assertSame(['40004'], $codeResolution->currentCodes);
+        $this->assertCount(4, $codeResolution->steps);
+    }
+
     private function createCommune(string $code): void
     {
         $department = Department::query()->firstOrCreate(

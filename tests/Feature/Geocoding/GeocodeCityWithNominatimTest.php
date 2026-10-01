@@ -39,6 +39,17 @@ final class GeocodeCityWithNominatimTest extends TestCase
     }
 
     #[Test]
+    public function it_accepts_the_point_when_the_commune_has_no_centre_to_compare_with(): void
+    {
+        Http::fake(['*' => Http::response([['lat' => '48.8566', 'lon' => '2.3522']])]);
+        Commune::query()->update(['centre_latitude' => null, 'centre_longitude' => null]);
+
+        $updated = $this->app->make(GeocodeCityWithNominatim::class)->execute(City::query()->sole());
+
+        $this->assertTrue($updated);
+    }
+
+    #[Test]
     public function it_asks_for_the_zip_code_and_the_commune_with_a_user_agent(): void
     {
         Http::fake(['*' => Http::response([['lat' => '47.3658595', 'lon' => '0.6888564']])]);

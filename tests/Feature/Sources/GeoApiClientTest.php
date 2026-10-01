@@ -14,6 +14,27 @@ use Tests\TestCase;
 final class GeoApiClientTest extends TestCase
 {
     #[Test]
+    public function it_ignores_a_response_that_is_not_a_list(): void
+    {
+        Http::fake(['*' => Http::response('"unexpected"')]);
+
+        $this->assertSame([], $this->app->make(GeoApiClient::class)->communes());
+    }
+
+    #[Test]
+    public function it_ignores_the_entries_with_unreadable_coordinates(): void
+    {
+        Http::fake(['*' => Http::response([[
+            'code'         => '00002',
+            'nom'          => 'Mal placée',
+            'codesPostaux' => ['00002'],
+            'centre'       => ['coordinates' => ['east', 'north']],
+        ]])]);
+
+        $this->assertSame([], $this->app->make(GeoApiClient::class)->communes());
+    }
+
+    #[Test]
     public function it_ignores_the_entries_without_centre(): void
     {
         Http::fake(['*' => Http::response([['code' => '00001', 'nom' => 'Sans centre', 'codesPostaux' => ['00001']]])]);

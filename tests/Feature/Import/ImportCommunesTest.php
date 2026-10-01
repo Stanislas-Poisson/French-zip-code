@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Import;
 
 use App\Actions\ImportCommunes;
+use App\Data\Insee\CommuneRecord;
 use App\Data\Insee\HistoricCommuneRecord;
 use App\Enums\CommuneKind;
 use App\Models\Commune;
@@ -16,6 +17,23 @@ use Tests\TestCase;
 final class ImportCommunesTest extends TestCase
 {
     use RefreshDatabase;
+
+    #[Test]
+    public function it_does_not_duplicate_an_overseas_commune_that_already_has_a_history(): void
+    {
+        $this->app->make(ImportCommunes::class)->execute(
+            [$this->period('98714', 'Bora-Bora', '1943-01-01', null)],
+            [],
+            [
+                new CommuneRecord('98714', CommuneKind::Commune, 'Bora-Bora', '987', null, null),
+                new CommuneRecord('98801', CommuneKind::Commune, 'Nouméa', '988', null, null),
+            ],
+            [],
+        );
+
+        $this->assertSame(1, Commune::query()->where('insee_code', '98714')->count());
+        $this->assertSame(1, Commune::query()->where('insee_code', '98801')->count());
+    }
 
     #[Test]
     public function it_does_not_keep_the_delegated_and_associated_communes(): void

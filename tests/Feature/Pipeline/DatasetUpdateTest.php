@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Pipeline;
 
+use App\Jobs\RunDatasetUpdateJob;
 use App\Models\City;
 use App\Models\Commune;
 use App\Models\Snapshot;
@@ -97,6 +98,17 @@ final class DatasetUpdateTest extends TestCase
         $last = Cache::get(DatasetUpdater::REPORT_CACHE_KEY);
         $this->assertIsArray($last);
         $this->assertTrue($last['complete']);
+    }
+
+    #[Test]
+    public function it_runs_the_update_from_the_queued_job(): void
+    {
+        config(['queue.default' => 'sync']);
+
+        dispatch_sync(new RunDatasetUpdateJob('run-job', false, false));
+
+        $this->assertSame(2, Snapshot::query()->whereNotNull('imported_at')->count());
+        $this->assertGreaterThan(0, City::query()->count());
     }
 
     #[Test]
