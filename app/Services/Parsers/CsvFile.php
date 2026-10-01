@@ -22,7 +22,7 @@ final class CsvFile
         $reader->setHeaderOffset(0);
 
         if (null !== $fromEncoding) {
-            $reader->addStreamFilter('convert.iconv.' . $fromEncoding . '/UTF-8');
+            $reader->appendStreamFilterOnRead('convert.iconv.' . $fromEncoding . '/UTF-8');
         }
 
         foreach ($reader->getRecords() as $record) {
