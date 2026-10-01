@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Prepare commit message hook - Auto-prefix ticket number from branch
+# Published by: zairakai/laravel-dev-tools
+#
+# Automatically extracts ticket number from branch name and prefixes commit message
+#
+# Branch naming convention:
+#   feature/#123-description  → Adds "#123" prefix
+#   fix/#456-bug-description  → Adds "#456" prefix
+#   hotfix/#789-critical      → Adds "#789" prefix
+
+commit_msg_file="$1"
+commit_source="$2"
+
+# Skip if this is a merge, squash, or amend commit
+[ -n "$commit_source" ] && exit 0
+
+# Get current branch name
+branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+# Extract ticket number from branch name pattern: type/#NUMBER-description
+if [[ $branch =~ (feature|fix|hotfix)/#([0-9]+) ]]; then
+    ticket="#${BASH_REMATCH[2]}"
+
+    # Add ticket prefix if not already present in commit message
+    if ! grep -q "$ticket" "$commit_msg_file"; then
+        sed -i.bak "1s/^/$ticket /" "$commit_msg_file"
+        rm -f "$commit_msg_file.bak"
+    fi
+fi
+
+exit 0

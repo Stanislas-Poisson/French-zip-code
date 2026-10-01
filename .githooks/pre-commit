@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+#
+# Zairakai Laravel Dev Tools - Pre-Commit Hook
+# Runs quality checks before allowing commit
+#
+# To bypass (emergency only):
+#   git commit --no-verify
+
+set -euo pipefail
+
+# ANSI Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+echo ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${CYAN}  Pre-Commit Quality Checks${NC}"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+
+# Navigate to project root (hooks run from .git/hooks or .githooks)
+PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+cd "$PROJECT_ROOT"
+
+# Check if make is available
+if ! command -v make &>/dev/null; then
+    echo -e "${RED}❌ make not found - skipping quality checks${NC}"
+    echo ""
+    exit 0
+fi
+
+# Check if Makefile exists
+if [[ ! -f "Makefile" ]]; then
+    echo -e "${YELLOW}⚠️  No Makefile found - skipping quality checks${NC}"
+    echo ""
+    exit 0
+fi
+
+# Run quality checks (quick: pint + phpstan + markdown)
+echo -e "${BLUE}→${NC} Running: ${CYAN}make quality-fast${NC}"
+echo ""
+
+if make quality-fast; then
+    echo ""
+    echo -e "${GREEN}✅ Quality checks passed - commit allowed${NC}"
+    echo ""
+    exit 0
+else
+    echo ""
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${RED}  ❌ Quality checks failed!${NC}"
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo -e "${YELLOW}Fix issues with:${NC}"
+    echo -e "  ${CYAN}make quality-fix${NC}  ${YELLOW}# Auto-fix what can be fixed${NC}"
+    echo ""
+    echo -e "${YELLOW}Or bypass (NOT recommended):${NC}"
+    echo -e "  ${CYAN}git commit --no-verify${NC}"
+    echo ""
+    exit 1
+fi

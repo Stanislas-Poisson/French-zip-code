@@ -3,7 +3,14 @@
     "name": "stanislas-poisson/french-zip-code",
     "type": "project",
     "description": "French regions, departments and cities with their zip codes and GPS coordinates.",
-    "keywords": ["laravel", "france", "zip-code", "cities", "departments", "regions"],
+    "keywords": [
+        "laravel",
+        "france",
+        "zip-code",
+        "cities",
+        "departments",
+        "regions"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.4",
@@ -16,7 +23,8 @@
         "fakerphp/faker": "^1.23",
         "laravel/pint": "^1.27",
         "mockery/mockery": "^1.6",
-        "phpunit/phpunit": "^12.5.12"
+        "phpunit/phpunit": "^12.5.12",
+        "zairakai/laravel-dev-tools": "^2.2"
     },
     "autoload": {
         "psr-4": {
@@ -33,11 +41,27 @@
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
-        "test": "phpunit",
-        "lint": "pint --test",
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
-        ]
+        ],
+        "setup-dev-tools": "bash vendor/zairakai/laravel-dev-tools/scripts/setup-package.sh",
+        "post-update-cmd": [
+            "@setup-dev-tools"
+        ],
+        "analyse": "bash vendor/zairakai/laravel-dev-tools/scripts/phpstan.sh",
+        "analyse:baseline": "GENERATE_BASELINE=true bash vendor/zairakai/laravel-dev-tools/scripts/phpstan.sh",
+        "cs": "bash vendor/zairakai/laravel-dev-tools/scripts/cs-check.sh",
+        "cs-fix": "bash vendor/zairakai/laravel-dev-tools/scripts/cs-fix.sh",
+        "insights": "bash vendor/zairakai/laravel-dev-tools/scripts/insights.sh",
+        "insights:fix": "bash vendor/zairakai/laravel-dev-tools/scripts/insights.sh --fix",
+        "markdown": "bash vendor/zairakai/laravel-dev-tools/scripts/markdownlint.sh",
+        "markdown:fix": "bash vendor/zairakai/laravel-dev-tools/scripts/markdownlint.sh --fix",
+        "phpmetrics": "bash vendor/zairakai/laravel-dev-tools/scripts/phpmetrics.sh",
+        "quality-fast": "bash vendor/zairakai/laravel-dev-tools/scripts/ci-quality.sh",
+        "rector": "bash vendor/zairakai/laravel-dev-tools/scripts/rector-check.sh",
+        "rector:fix": "bash vendor/zairakai/laravel-dev-tools/scripts/rector-fix.sh",
+        "test:coverage": "COVERAGE=true bash vendor/zairakai/laravel-dev-tools/scripts/test.sh",
+        "test:unit": "TESTSUITE=Unit bash vendor/zairakai/laravel-dev-tools/scripts/test.sh"
     },
     "extra": {
         "laravel": {
@@ -47,7 +71,11 @@
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "zairakai/laravel-dev-tools": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "minimum-stability": "stable",
     "prefer-stable": true

@@ -1,65 +1,54 @@
-# 1N73LL1G3NC3 15 7H3 4B1L17Y 70 4D4P7 70 CG4NG3.
-# - 57PH3N H4WK1NG
+# Zairakai Laravel Dev Tools - Project Makefile
+# This file includes shared targets from vendor/zairakai/laravel-dev-tools
 
-.DEFAULT_GOAL = help
-.PHONY: help start stop restart ssh builder export build install composer migration pint clean dist-clean db-reset docker-prune
+LARAVEL_DIRECTORY_TOOLS_PROJECT_ROOT := $(shell pwd)
+LARAVEL_DIRECTORY_TOOLS_PROJECT_NAME := French-zip-code
 
-include .env
+.DEFAULT_GOAL := help
 
-PROJECT = frenchzipcode
-COMPOSE = docker compose -p $(PROJECT)
-RUN = $(COMPOSE) run --rm php
-EXEC = docker exec -ti $(PROJECT)-php-1
-EXPORT = docker exec $(PROJECT)-mysql-1
-COMPOSE_HTTP_TIMEOUT = 300
+# Include shared tooling from Zairakai Laravel Dev Tools
+include vendor/zairakai/laravel-dev-tools/tools/make/core.mk
 
-help:	## Show this help
-	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
-	@echo ''
+# Override Docker container name if needed (default: app)
+# ZAIRAKAI_DOCKER_APP := my-app-container
 
-start: build install	## Start the project
+# Override Pint command if needed (e.g., for custom Docker setup)
+# CMD_PINT := docker exec my-app vendor/bin/pint
+
+# Override PHPStan command if needed
+# CMD_PHPSTAN := docker exec my-app vendor/bin/phpstan
+
+# Add your custom project-specific targets below
+# Example:
+# .PHONY: deploy
+# deploy: ## Deploy the application
+# 	@echo "Deploying application…"
+
+# Docker runtime of the project (the quality tools above run on the host)
+COMPOSE := docker compose -p frenchzipcode
+ARTISAN := $(COMPOSE) exec -T php php artisan
+
+## —— 🐳 Docker ——
+
+.PHONY: start
+start: ## Start the containers (php, mysql, redis) and install the dependencies
 	$(COMPOSE) up -d
+	$(COMPOSE) exec -T php composer install --no-interaction --prefer-dist --optimize-autoloader
 
-stop:	## Stop and clear the project (containers, network and database volume)
+.PHONY: stop
+stop: ## Stop the project and remove its containers, network and volumes
 	$(COMPOSE) down -v --remove-orphans
 
-restart: stop start	## Execute stop and start
+.PHONY: ssh
+ssh: ## Open a shell in the php container
+	$(COMPOSE) exec php bash
 
-ssh:	## Acces to the app
-	@$(EXEC) bash
+## —— 🗄️ Database ——
 
-builder:	## Build the database
-	$(RUN) php artisan builder:build
+.PHONY: migrate
+migrate: ## Run the database migrations
+	$(ARTISAN) migrate --force
 
-export:	## Export the build
-	$(RUN) php artisan builder:export
-	@$(EXPORT) sh -c 'exec mysqldump -u root --password=root $(DB_DATABASE) regions' > ./Exports/sql/regions.sql
-	@$(EXPORT) sh -c 'exec mysqldump -u root --password=root $(DB_DATABASE) departments' > ./Exports/sql/departments.sql
-	@$(EXPORT) sh -c 'exec mysqldump -u root --password=root $(DB_DATABASE) cities' > ./Exports/sql/cities.sql
-
-build:	## Pull and build the containers
-	$(COMPOSE) build --pull
-
-install: composer migration
-
-composer:	## Install or update the composer dependencies
-	if [ ! -d vendor ]; then $(RUN) composer install --no-interaction --prefer-dist --optimize-autoloader; else $(RUN) composer dump-autoload; fi
-
-migration:	## Artisan migrate through docker
-	$(RUN) php artisan migrate
-
-pint:	## Run Laravel Pint to fix the code style
-	$(RUN) vendor/bin/pint
-
-clean:	## Clean the Laravel cache and config
-	$(RUN) php artisan cache:clear
-	$(RUN) php artisan config:clear
-
-dist-clean: clean	## In addition to "clean" delete the vendor directory
-	$(RUN) rm -rf vendor/*
-
-db-reset:	## Drop all the tables and migrate again
-	$(RUN) php artisan migrate:fresh
-
-docker-prune:	## Prune the system
-	docker system prune -af
+.PHONY: db-reset
+db-reset: ## Drop all the tables and migrate again
+	$(ARTISAN) migrate:fresh --force

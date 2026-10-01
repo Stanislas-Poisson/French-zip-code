@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# Commit message validation hook
+# Published by: zairakai/laravel-dev-tools
+#
+# Enforces Conventional Commits format:
+# <type>(scope): #TICKET subject
+#
+# Types: feat|fix|docs|style|refactor|test|chore|perf|ci|build
+# Example: feat(auth): #123 add user authentication
+#
+# Special case: WIP commits are always allowed
+# Example: WIP
+# Example: WIP add user authentication (in progress)
+
+commit_msg=$(cat "$1")
+
+# ============================================================================
+# WIP Exception - always allowed, no validation needed
+# ============================================================================
+
+if echo "$commit_msg" | grep -qiE "^WIP(\s|$)"; then
+    echo "✅ WIP commit accepted"
+    exit 0
+fi
+
+# ============================================================================
+# Conventional Commits format validation
+# Format: <type>(optional-scope): optional-#TICKET subject (min 10 chars)
+# ============================================================================
+
+VALID_TYPES="feat|fix|docs|style|refactor|test|chore|perf|ci|build"
+COMMIT_PATTERN="^(${VALID_TYPES})(\(.+\))?: (#[0-9]+\s)?[a-z].{10,}"
+
+if ! echo "$commit_msg" | grep -qE "$COMMIT_PATTERN"; then
+    echo ""
+    echo "❌ Invalid commit message format"
+    echo ""
+    echo "━━━━━━━━━━━━━━━━"
+    echo "  Expected format:"
+    echo "  <type>(scope): #TICKET subject"
+    echo "━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "  Your message: \"$commit_msg\""
+    echo ""
+    echo "  Valid types: feat, fix, docs, style, refactor,"
+    echo "               test, chore, perf, ci, build"
+    echo ""
+    echo "  Rules:"
+    echo "    ✓ Type is required (feat, fix, chore...)"
+    echo "    ✓ Scope is optional  → feat(auth): ..."
+    echo "    ✓ Ticket is optional → feat: #123 ..."
+    echo "    ✓ Subject must start with lowercase"
+    echo "    ✓ Subject must be at least 10 characters"
+    echo "    ✓ Use WIP to bypass validation"
+    echo ""
+    echo "  Examples:"
+    echo "    feat(auth): add user authentication"
+    echo "    fix(api): #456 correct email validation logic"
+    echo "    chore: update dependencies"
+    echo "    docs: add installation guide to readme"
+    echo "    WIP (work in progress, skips validation)"
+    echo ""
+    exit 1
+fi
+
+# ============================================================================
+# First line length check (max 72 characters)
+# ============================================================================
+
+first_line=$(echo "$commit_msg" | head -n1)
+first_line_length=${#first_line}
+
+if [[ $first_line_length -gt 72 ]]; then
+    echo ""
+    echo "❌ Commit message first line too long"
+    echo ""
+    echo "━━━━━━━━━━━━━━━━"
+    echo "  Length: ${first_line_length}/72 characters"
+    echo "━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "  Your message: \"${first_line}\""
+    echo ""
+    echo "  Why 72 chars? Git log, GitHub and GitLab"
+    echo "  truncate longer messages in their interfaces."
+    echo ""
+    echo "  Tips:"
+    echo "    ✓ Move details to the commit body (2nd paragraph)"
+    echo "    ✓ Use abbreviations when possible"
+    echo "    ✓ Reference tickets instead of explaining them"
+    echo ""
+    exit 1
+fi
+
+echo "✅ Commit message OK"
+exit 0

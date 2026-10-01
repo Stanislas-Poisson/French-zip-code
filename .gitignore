@@ -8,3 +8,10 @@
 /vendor
 /storage/*.key
 Thumbs.db
+
+# Dev Tools - Generated temporary files
+.*.tmp.*
+
+# Dev Tools - Published configs (optional, uncomment to ignore)
+# config/dev-tools/
+/build
