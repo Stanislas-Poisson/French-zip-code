@@ -1,6 +1,6 @@
 # Architecture of the rework (ticket #55)
 
-This document describes the decisions made for the rework of French-zip-code. It was written **before the code** and then validated. The figures quoted were measured on the real sources on 2026-10-01. §8 describes what is implemented and the differences with the plan, §9 the results of the first real import.
+This document describes the decisions made for the rework of French-postal-code. It was written **before the code** and then validated. The figures quoted were measured on the real sources on 2026-10-01. §8 describes what is implemented and the differences with the plan, §9 the results of the first real import.
 
 ## 1. Goals
 

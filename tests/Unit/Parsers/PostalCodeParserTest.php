@@ -31,7 +31,7 @@ final class PostalCodeParserTest extends TestCase
     }
 
     #[Test]
-    public function it_parses_the_zip_codes_of_a_commune(): void
+    public function it_parses_the_postal_codes_of_a_commune(): void
     {
         $records = iterator_to_array((new PostalCodeParser(new CsvFile))->parse(__DIR__ . '/../../Fixtures/laposte/hexasmal.csv'), false);
 

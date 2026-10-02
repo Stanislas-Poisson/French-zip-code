@@ -65,7 +65,7 @@ final class ResolveCityTest extends TestCase
     }
 
     #[Test]
-    public function it_lists_every_zip_code_of_the_merged_commune_when_the_old_one_is_not_used_any_more(): void
+    public function it_lists_every_postal_code_of_the_merged_commune_when_the_old_one_is_not_used_any_more(): void
     {
         $this->city('85213', '85310');
         $this->city('85213', '85311');
@@ -77,7 +77,7 @@ final class ResolveCityTest extends TestCase
     }
 
     #[Test]
-    public function it_lists_the_zip_codes_of_a_commune_when_none_is_given(): void
+    public function it_lists_the_postal_codes_of_a_commune_when_none_is_given(): void
     {
         $this->city('85213', '85310');
 
@@ -99,7 +99,7 @@ final class ResolveCityTest extends TestCase
     }
 
     #[Test]
-    public function it_resolves_an_absorbed_commune_to_the_same_zip_code_of_the_merged_commune(): void
+    public function it_resolves_an_absorbed_commune_to_the_same_postal_code_of_the_merged_commune(): void
     {
         $new = $this->city('85213', '85310');
         $this->city('85213', '85311');
@@ -111,7 +111,7 @@ final class ResolveCityTest extends TestCase
     }
 
     #[Test]
-    public function it_warns_when_the_zip_code_is_not_used_any_more_by_the_communes(): void
+    public function it_warns_when_the_postal_code_is_not_used_any_more_by_the_communes(): void
     {
         $this->city('85213', '85310');
 

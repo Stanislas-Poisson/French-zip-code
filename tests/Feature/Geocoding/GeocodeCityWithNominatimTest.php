@@ -50,13 +50,13 @@ final class GeocodeCityWithNominatimTest extends TestCase
     }
 
     #[Test]
-    public function it_asks_for_the_zip_code_and_the_commune_with_a_user_agent(): void
+    public function it_asks_for_the_postal_code_and_the_commune_with_a_user_agent(): void
     {
         Http::fake(['*' => Http::response([['lat' => '47.3658595', 'lon' => '0.6888564']])]);
 
         $this->app->make(GeocodeCityWithNominatim::class)->execute(City::query()->sole());
 
-        Http::assertSent(static fn (Request $request): bool => 'French-zip-code' === $request->header('User-Agent')[0]
+        Http::assertSent(static fn (Request $request): bool => 'French-postal-code' === $request->header('User-Agent')[0]
             && str_contains($request->url(), 'postalcode=37200')
             && str_contains($request->url(), 'city=Tours'));
     }

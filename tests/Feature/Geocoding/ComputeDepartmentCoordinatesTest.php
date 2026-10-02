@@ -31,7 +31,7 @@ final class ComputeDepartmentCoordinatesTest extends TestCase
     {
         parent::setUp();
 
-        $this->directory = sys_get_temp_dir() . '/french-zip-code-ban-' . bin2hex(random_bytes(4));
+        $this->directory = sys_get_temp_dir() . '/french-postal-code-ban-' . bin2hex(random_bytes(4));
         config(['sources.directory' => $this->directory]);
 
         CogFixtures::import($this->app);
@@ -70,7 +70,7 @@ final class ComputeDepartmentCoordinatesTest extends TestCase
     }
 
     #[Test]
-    public function it_gives_each_zip_code_of_tours_a_distinct_point_from_the_department_file(): void
+    public function it_gives_each_postal_code_of_tours_a_distinct_point_from_the_department_file(): void
     {
         $this->app->bind(FileDownloader::class, fn (): FakeBanDownloader => new FakeBanDownloader(__DIR__ . '/../../Fixtures/ban/adresses-37.csv.gz'));
 

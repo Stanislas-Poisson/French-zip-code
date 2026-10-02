@@ -28,10 +28,10 @@ final class BanAddressParserTest extends TestCase
     {
         $addresses = iterator_to_array((new BanAddressParser(new CsvFile))->parse(__DIR__ . '/../../Fixtures/ban/adresses-37.csv.gz'), false);
 
-        $tours      = array_filter($addresses, static fn (BanAddressPoint $banAddressPoint): bool => '37261' === $banAddressPoint->inseeCode);
-        $perZipCode = array_count_values(array_map(static fn (BanAddressPoint $banAddressPoint): string => $banAddressPoint->postalCode, $tours));
+        $tours         = array_filter($addresses, static fn (BanAddressPoint $banAddressPoint): bool => '37261' === $banAddressPoint->inseeCode);
+        $perPostalCode = array_count_values(array_map(static fn (BanAddressPoint $banAddressPoint): string => $banAddressPoint->postalCode, $tours));
 
-        $this->assertSame(['37000' => 15, '37100' => 15, '37200' => 15], $perZipCode);
+        $this->assertSame(['37000' => 15, '37100' => 15, '37200' => 15], $perPostalCode);
         $this->assertCount(48, $addresses);
     }
 }

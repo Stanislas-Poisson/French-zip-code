@@ -20,7 +20,7 @@ final class HttpFileDownloaderTest extends TestCase
     {
         parent::setUp();
 
-        $this->directory = sys_get_temp_dir() . '/french-zip-code-' . bin2hex(random_bytes(4));
+        $this->directory = sys_get_temp_dir() . '/french-postal-code-' . bin2hex(random_bytes(4));
     }
 
     protected function tearDown(): void

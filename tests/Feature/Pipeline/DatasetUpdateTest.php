@@ -27,7 +27,7 @@ final class DatasetUpdateTest extends TestCase
     {
         parent::setUp();
 
-        $this->directory = sys_get_temp_dir() . '/french-zip-code-update-' . bin2hex(random_bytes(4));
+        $this->directory = sys_get_temp_dir() . '/french-postal-code-update-' . bin2hex(random_bytes(4));
         config(['sources.directory' => $this->directory]);
         Cache::flush();
 
@@ -112,7 +112,7 @@ final class DatasetUpdateTest extends TestCase
     }
 
     #[Test]
-    public function it_runs_the_whole_update_and_gives_each_zip_code_its_own_point(): void
+    public function it_runs_the_whole_update_and_gives_each_postal_code_its_own_point(): void
     {
         $this->command('dataset:update', ['--sync' => true])->assertSuccessful();
 

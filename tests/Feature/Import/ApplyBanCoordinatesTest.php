@@ -21,7 +21,7 @@ final class ApplyBanCoordinatesTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_gives_each_zip_code_of_a_commune_its_own_point(): void
+    public function it_gives_each_postal_code_of_a_commune_its_own_point(): void
     {
         $this->importTours();
 

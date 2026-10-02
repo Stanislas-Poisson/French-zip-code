@@ -68,7 +68,7 @@ final class ImportCitiesTest extends TestCase
     }
 
     #[Test]
-    public function it_creates_one_city_per_commune_and_zip_code(): void
+    public function it_creates_one_city_per_commune_and_postal_code(): void
     {
         $result = $this->import('2026', [
             new PostalRecord('37261', '37000', 'TOURS'),

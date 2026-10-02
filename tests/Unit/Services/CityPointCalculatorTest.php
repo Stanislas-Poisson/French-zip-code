@@ -52,7 +52,7 @@ final class CityPointCalculatorTest extends TestCase
     }
 
     #[Test]
-    public function it_keeps_each_pair_of_commune_and_zip_code_apart(): void
+    public function it_keeps_each_pair_of_commune_and_postal_code_apart(): void
     {
         $points = (new CityPointCalculator)->compute([
             new BanAddressPoint('37261', '37000', 47.38, 0.68),

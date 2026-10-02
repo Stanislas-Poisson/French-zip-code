@@ -18,7 +18,7 @@ final class NominatimClient
      */
     public function findPostalCode(string $postalCode, string $communeName): ?array
     {
-        $results = Http::withUserAgent(config()->string('sources.nominatim.user_agent', 'French-zip-code'))
+        $results = Http::withUserAgent(config()->string('sources.nominatim.user_agent', 'French-postal-code'))
             ->timeout(30)
             ->get(config()->string('sources.nominatim.search_url', ''), [
                 'postalcode' => $postalCode,

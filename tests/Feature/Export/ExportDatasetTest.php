@@ -24,7 +24,7 @@ final class ExportDatasetTest extends TestCase
     {
         parent::setUp();
 
-        $this->directory = sys_get_temp_dir() . '/french-zip-code-export-' . bin2hex(random_bytes(4));
+        $this->directory = sys_get_temp_dir() . '/french-postal-code-export-' . bin2hex(random_bytes(4));
 
         CogFixtures::import($this->app);
         $this->app->make(ImportCities::class)->execute(

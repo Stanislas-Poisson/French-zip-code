@@ -42,9 +42,9 @@ services:
       - db_data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: frenchzipcode
-      MYSQL_USER: frenchzipcode
-      MYSQL_PASSWORD: frenchzipcode
+      MYSQL_DATABASE: frenchpostalcode
+      MYSQL_USER: frenchpostalcode
+      MYSQL_PASSWORD: frenchpostalcode
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
       interval: 5s

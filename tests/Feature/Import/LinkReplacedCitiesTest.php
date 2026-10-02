@@ -30,7 +30,7 @@ final class LinkReplacedCitiesTest extends TestCase
     }
 
     #[Test]
-    public function it_links_a_closed_city_to_the_same_zip_code_of_the_commune_that_replaced_it(): void
+    public function it_links_a_closed_city_to_the_same_postal_code_of_the_commune_that_replaced_it(): void
     {
         $city = $this->city('85043', '85310', '2016-01-01');
         $new  = $this->city('85213', '85310', null);

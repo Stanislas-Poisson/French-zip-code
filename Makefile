@@ -2,7 +2,7 @@
 # This file includes shared targets from vendor/zairakai/laravel-dev-tools
 
 LARAVEL_DIRECTORY_TOOLS_PROJECT_ROOT := $(shell pwd)
-LARAVEL_DIRECTORY_TOOLS_PROJECT_NAME := French-zip-code
+LARAVEL_DIRECTORY_TOOLS_PROJECT_NAME := French-postal-code
 
 .DEFAULT_GOAL := help
 
@@ -25,7 +25,7 @@ include vendor/zairakai/laravel-dev-tools/tools/make/core.mk
 # 	@echo "Deploying application…"
 
 # Docker runtime of the project (the quality tools above run on the host)
-COMPOSE := docker compose -p frenchzipcode
+COMPOSE := docker compose -p frenchpostalcode
 ARTISAN := $(COMPOSE) exec -T php php artisan
 
 ## —— 🐳 Docker ——
@@ -85,7 +85,7 @@ EXPORT_DIR ?= storage/app/exports
 export: ## Export the dataset and its history to CSV, JSON and SQL files (EXPORT_DIR, storage/app/exports by default)
 	$(ARTISAN) dataset:export --path=/var/www/html/$(EXPORT_DIR)
 	@mkdir -p $(EXPORT_DIR)/sql
-	$(COMPOSE) exec -T mysql mysqldump -uroot -proot --no-tablespaces --skip-comments --skip-lock-tables frenchzipcode regions departments communes cities commune_successions reference_changes > $(EXPORT_DIR)/sql/dataset.sql
+	$(COMPOSE) exec -T mysql mysqldump -uroot -proot --no-tablespaces --skip-comments --skip-lock-tables frenchpostalcode regions departments communes cities commune_successions reference_changes > $(EXPORT_DIR)/sql/dataset.sql
 	@echo "SQL dump written to $(EXPORT_DIR)/sql/dataset.sql"
 
 .PHONY: resolve

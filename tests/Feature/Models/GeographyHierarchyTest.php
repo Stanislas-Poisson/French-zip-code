@@ -62,7 +62,7 @@ final class GeographyHierarchyTest extends TestCase
     }
 
     #[Test]
-    public function it_keeps_the_point_of_a_zip_code_and_its_source(): void
+    public function it_keeps_the_point_of_a_postal_code_and_its_source(): void
     {
         $city = $this->createTours37200();
 

@@ -27,7 +27,7 @@ return [
 
     'nominatim' => [
         'search_url' => env('NOMINATIM_SEARCH_URL', 'https://nominatim.openstreetmap.org/search'),
-        'user_agent' => env('NOMINATIM_USER_AGENT', 'French-zip-code'),
+        'user_agent' => env('NOMINATIM_USER_AGENT', 'French-postal-code'),
         // A point farther than this from the centre of the commune is considered as a wrong match.
         'max_distance_km' => 30,
     ],
