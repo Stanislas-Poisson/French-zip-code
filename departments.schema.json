@@ -1,0 +1,90 @@
+{
+  "$schema": "https://frictionlessdata.io/schemas/table-schema.json",
+  "name": "departments",
+  "title": "Départements et collectivités d'outre-mer",
+  "description": "Les départements et les collectivités d'outre-mer.",
+  "version": "4.0.0",
+  "missingValues": [
+    ""
+  ],
+  "fields": [
+    {
+      "name": "id",
+      "title": "Identifiant",
+      "description": "Identifiant stable de la ligne, jamais réutilisé.",
+      "type": "integer",
+      "constraints": {
+        "required": true,
+        "minimum": 1
+      }
+    },
+    {
+      "name": "region_code",
+      "title": "Code de la région",
+      "description": "Code de la région de rattachement. Vide pour les collectivités d'outre-mer, qui n'ont pas de région.",
+      "type": "string",
+      "constraints": {
+        "pattern": "^[0-9]{2}$"
+      }
+    },
+    {
+      "name": "code",
+      "title": "Code",
+      "description": "Code INSEE du département (deux chiffres, 2A ou 2B pour la Corse, trois chiffres outre-mer) ou de la collectivité.",
+      "type": "string",
+      "constraints": {
+        "required": true,
+        "pattern": "^([0-9]{2}|2[AB]|[0-9]{3})$"
+      }
+    },
+    {
+      "name": "type",
+      "title": "Type",
+      "description": "Nature de l'entité : département, ou collectivité d'outre-mer.",
+      "type": "string",
+      "constraints": {
+        "required": true,
+        "enum": [
+          "department",
+          "overseas_collectivity"
+        ]
+      }
+    },
+    {
+      "name": "name",
+      "title": "Nom",
+      "description": "Nom du département ou de la collectivité.",
+      "type": "string",
+      "constraints": {
+        "required": true
+      }
+    },
+    {
+      "name": "slug",
+      "title": "Identifiant lisible",
+      "description": "Nom en minuscules, sans accents, mots séparés par des tirets.",
+      "type": "string",
+      "constraints": {
+        "required": true
+      }
+    },
+    {
+      "name": "valid_from",
+      "title": "Début de validité",
+      "description": "Date de début de validité de la ligne (AAAA-MM-JJ). 1943-01-01 si la ligne existe depuis le début de l'historique.",
+      "type": "date",
+      "constraints": {
+        "required": true
+      }
+    },
+    {
+      "name": "valid_to",
+      "title": "Fin de validité",
+      "description": "Date de fin de validité de la ligne (AAAA-MM-JJ). Vide tant que la ligne est valide : une ligne n'est jamais supprimée, sa validité est fermée.",
+      "type": "date"
+    }
+  ],
+  "primaryKey": [
+    "id"
+  ]
+}

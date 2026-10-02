@@ -1,0 +1,60 @@
+{
+  "$schema": "https://frictionlessdata.io/schemas/table-schema.json",
+  "name": "reference_changes",
+  "title": "Changements détectés",
+  "description": "Les changements de régions, de départements et de codes postaux détectés en comparant deux mises à jour. Vide à la première version.",
+  "version": "4.0.0",
+  "missingValues": [
+    ""
+  ],
+  "fields": [
+    {
+      "name": "entity_type",
+      "title": "Type d'entité",
+      "description": "Type d'entité concernée : région, département ou code postal.",
+      "type": "string",
+      "constraints": {
+        "required": true
+      }
+    },
+    {
+      "name": "entity_code",
+      "title": "Code",
+      "description": "Code de l'entité concernée.",
+      "type": "string",
+      "constraints": {
+        "required": true
+      }
+    },
+    {
+      "name": "change_type",
+      "title": "Nature du changement",
+      "description": "Nature du changement détecté (créé, supprimé, renommé…).",
+      "type": "string",
+      "constraints": {
+        "required": true
+      }
+    },
+    {
+      "name": "old_value",
+      "title": "Ancienne valeur",
+      "description": "Valeur avant le changement, en JSON. Vide pour une création.",
+      "type": "string"
+    },
+    {
+      "name": "new_value",
+      "title": "Nouvelle valeur",
+      "description": "Valeur après le changement, en JSON. Vide pour une suppression.",
+      "type": "string"
+    },
+    {
+      "name": "detected_at",
+      "title": "Date de détection",
+      "description": "Date à laquelle le changement a été détecté (AAAA-MM-JJ).",
+      "type": "date",
+      "constraints": {
+        "required": true
+      }
+    }
+  ]
+}

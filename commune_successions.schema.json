@@ -1,0 +1,57 @@
+{
+  "$schema": "https://frictionlessdata.io/schemas/table-schema.json",
+  "name": "commune_successions",
+  "title": "Successions de codes de commune",
+  "description": "Pour un ancien code INSEE, le ou les codes qui lui succèdent, la nature du changement et sa date.",
+  "version": "4.0.0",
+  "missingValues": [
+    ""
+  ],
+  "fields": [
+    {
+      "name": "from_code",
+      "title": "Ancien code",
+      "description": "Code INSEE de la commune qui change ou disparaît.",
+      "type": "string",
+      "constraints": {
+        "required": true,
+        "pattern": "^([0-9]{5}|2[AB][0-9]{3})$"
+      }
+    },
+    {
+      "name": "to_code",
+      "title": "Nouveau code",
+      "description": "Code INSEE de la commune qui lui succède. Vide si la commune disparaît sans successeur.",
+      "type": "string",
+      "constraints": {
+        "pattern": "^([0-9]{5}|2[AB][0-9]{3})$"
+      }
+    },
+    {
+      "name": "kind",
+      "title": "Nature du changement",
+      "description": "absorbed (absorbée), code_reused (code repris par une autre commune), deleted (supprimée sans successeur), renamed (renommée), replaced (remplacée par un autre code) ou split (scindée).",
+      "type": "string",
+      "constraints": {
+        "required": true,
+        "enum": [
+          "absorbed",
+          "code_reused",
+          "deleted",
+          "renamed",
+          "replaced",
+          "split"
+        ]
+      }
+    },
+    {
+      "name": "effective_date",
+      "title": "Date d'effet",
+      "description": "Date d'effet du changement (AAAA-MM-JJ).",
+      "type": "date",
+      "constraints": {
+        "required": true
+      }
+    }
+  ]
+}
