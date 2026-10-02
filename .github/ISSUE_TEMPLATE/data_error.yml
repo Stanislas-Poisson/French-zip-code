@@ -1,6 +1,6 @@
 name: Wrong or missing data
 description: A commune, a postal code, a GPS point or an old code that resolves badly.
-labels: [bug]
+labels: [data]
 body:
   - type: input
     id: code
