@@ -12,11 +12,25 @@
     "reuses": 3,
     "views": 49806
   },
-  "dataset": null,
+  "dataset": {
+    "cities": 35510,
+    "cities_by_source": {
+      "ban": 35290,
+      "commune_centre": 36,
+      "nominatim": 184
+    },
+    "cog_vintage": "2026",
+    "communes": 35015,
+    "departments": 110,
+    "generated_at": "2026-10-02",
+    "laposte_version": "2026-10",
+    "regions": 18,
+    "successions": 8480
+  },
   "github": {
     "clones_total": 209,
-    "last_commit": "2026-10-01T15:32:10Z",
-    "open_issues": 1,
+    "last_commit": "2026-10-02T15:06:06Z",
+    "open_issues": 0,
     "release_downloads": 1233,
     "tracked_since": "2026-09-18",
     "views_total": 54,
