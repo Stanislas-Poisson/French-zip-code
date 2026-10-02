@@ -73,11 +73,11 @@ update-force: ## Run a full update in this terminal, importing every file again 
 
 .PHONY: status
 status: ## Show the state of the dataset and of the last update
-	$(ARTISAN) dataset:status
+	@$(ARTISAN) dataset:status
 
 .PHONY: horizon-status
 horizon-status: ## Show whether the Horizon workers are running
-	$(ARTISAN) horizon:status
+	@$(ARTISAN) horizon:status
 
 .PHONY: horizon-logs
 horizon-logs: ## Follow the logs of the Horizon workers
@@ -87,20 +87,20 @@ EXPORT_DIR ?= storage/app/exports
 
 .PHONY: export
 export: ## Export the dataset and its history to CSV, JSON and SQL files (EXPORT_DIR, storage/app/exports by default)
-	$(ARTISAN) dataset:export --path=/var/www/html/$(EXPORT_DIR)
+	@$(ARTISAN) dataset:export --path=/var/www/html/$(EXPORT_DIR)
 	@mkdir -p $(EXPORT_DIR)/sql
-	$(COMPOSE) exec -T mysql mysqldump -uroot -proot --no-tablespaces --skip-comments --skip-lock-tables frenchpostalcode regions departments communes cities commune_successions reference_changes > $(EXPORT_DIR)/sql/dataset.sql
+	@$(COMPOSE) exec -T -e MYSQL_PWD=root mysql mysqldump -uroot --no-tablespaces --skip-comments --skip-lock-tables frenchpostalcode regions departments communes cities commune_successions reference_changes > $(EXPORT_DIR)/sql/dataset.sql
 	@echo "SQL dump written to $(EXPORT_DIR)/sql/dataset.sql"
 
 .PHONY: build-dataset
 build-dataset: ## Update the dataset then export it, stopping before the export if the update is incomplete (FORCE=1 imports every file again)
 	$(COMPOSE) exec php php artisan dataset:update --sync $(if $(FORCE),--force)
-	$(MAKE) export
+	@$(MAKE) --no-print-directory export
 
 .PHONY: build-dataset-force
 build-dataset-force: ## Same as build-dataset, importing every file again even if it did not change
-	$(MAKE) build-dataset FORCE=1
+	@$(MAKE) --no-print-directory build-dataset FORCE=1
 
 .PHONY: resolve
 resolve: ## Find where an old commune code points to today (CODE=37261 POSTAL_CODE=37000 DATE=2015-01-01)
-	$(ARTISAN) dataset:resolve $(CODE) $(if $(POSTAL_CODE),--postal-code=$(POSTAL_CODE)) $(if $(DATE),--date=$(DATE))
+	@$(ARTISAN) dataset:resolve $(CODE) $(if $(POSTAL_CODE),--postal-code=$(POSTAL_CODE)) $(if $(DATE),--date=$(DATE))
