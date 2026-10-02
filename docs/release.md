@@ -20,13 +20,13 @@ The dataset files are produced by `make export` and attached to the GitHub relea
 
    It must say `complete`: every city has a point, every department was processed and no job failed.
 
-3. Create the version tag, reserved to maintainers and prefixed with `v` (`v4.0.0`), on `main`, once the CI is green.
+3. Create the version tag, reserved to maintainers and written `MAJOR.MINOR.PATCH` without a prefix (`4.0.0`), on `main`, once the CI is green.
 
 4. Create the GitHub release with the files from `storage/app/exports` as attachments.
 
    ```bash
    cd storage/app/exports
-   gh release create v4.0.0 --generate-notes csv/*.csv json/*.json sql/dataset.sql statistics.json
+   gh release create 4.0.0 --generate-notes csv/*.csv json/*.json sql/dataset.sql statistics.json
    ```
 
    The notes are generated from the Conventional Commits between two tags, which is why their format matters.
