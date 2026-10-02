@@ -179,7 +179,7 @@ Made by Stanislas Poisson _(Zairakai)_
 [docker]: https://www.docker.com/
 [make]: https://www.gnu.org/software/make/
 [releases]: https://github.com/Stanislas-Poisson/French-postal-code/releases
-[data-gouv]: https://www.data.gouv.fr/datasets/regions-departements-villes-et-villages-de-france-et-doutre-mer
+[data-gouv]: https://www.data.gouv.fr/datasets/regions-departements-communes-et-codes-postaux-de-france-avec-un-point-gps-par-code-postal-et-lhistorique-des-changements
 [dev-tools]: https://packagist.org/packages/zairakai/laravel-dev-tools
 [architecture]: docs/architecture.md
 [release]: docs/release.md
