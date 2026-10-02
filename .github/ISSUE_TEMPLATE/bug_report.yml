@@ -1,0 +1,24 @@
+name: Bug in the tool
+description: A command fails or behaves unexpectedly.
+labels: [bug]
+body:
+  - type: input
+    id: command
+    attributes:
+      label: Command
+      description: The command you ran, for example `make update-sync`.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output and error
+      description: What the command printed. Please remove anything private.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Version or commit, operating system, and whether the update was complete before.

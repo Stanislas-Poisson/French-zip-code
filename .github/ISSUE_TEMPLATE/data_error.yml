@@ -1,0 +1,25 @@
+name: Wrong or missing data
+description: A commune, a postal code, a GPS point or an old code that resolves badly.
+labels: [bug]
+body:
+  - type: input
+    id: code
+    attributes:
+      label: INSEE code or postal code
+      description: The code concerned, for example `37261` or `37200`.
+    validations:
+      required: true
+  - type: textarea
+    id: found
+    attributes:
+      label: What the dataset says
+      description: The row, the file and the release version you looked at.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: The expected value and, if you have one, the official source that shows it.
+    validations:
+      required: true
