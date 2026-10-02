@@ -149,7 +149,8 @@ make test       # PHPUnit
 
 The repository uses [`zairakai/laravel-dev-tools`][dev-tools] (quality tools, git hooks, Makefile).  
 Commits follow Conventional Commits with the ticket number (`type(scope): #123 subject`) and the repository only accepts merge commits on rebased branches.  
-The architecture is described in [`docs/architecture.md`][architecture] and how to publish a version in [`docs/release.md`][release].
+The architecture is described in [`docs/architecture.md`][architecture] and how to publish a version in [`docs/release.md`][release].  
+See also [`CONTRIBUTING.md`][contributing], [`SECURITY.md`][security] and the [code of conduct][conduct].
 
 ## Licence
 
@@ -183,6 +184,9 @@ Made by Stanislas Poisson _(Zairakai)_
 [architecture]: docs/architecture.md
 [release]: docs/release.md
 [license]: LICENSE
+[contributing]: CONTRIBUTING.md
+[security]: SECURITY.md
+[conduct]: CODE_OF_CONDUCT.md
 
 [ci]: https://github.com/Stanislas-Poisson/French-postal-code/actions/workflows/ci.yml
 [composer]: composer.json
