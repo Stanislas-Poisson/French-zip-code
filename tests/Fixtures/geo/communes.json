@@ -1,0 +1,68 @@
+[
+ {
+  "nom": "L'Abergement-Clémenciat",
+  "code": "01001",
+  "codesPostaux": [
+   "01400"
+  ],
+  "centre": {
+   "type": "Point",
+   "coordinates": [
+    4.9306,
+    46.1517
+   ]
+  },
+  "codeDepartement": "01",
+  "codeRegion": "84"
+ },
+ {
+  "nom": "Tours",
+  "code": "37261",
+  "codesPostaux": [
+   "37000",
+   "37100",
+   "37200"
+  ],
+  "centre": {
+   "type": "Point",
+   "coordinates": [
+    0.6949,
+    47.3943
+   ]
+  },
+  "codeDepartement": "37",
+  "codeRegion": "24"
+ },
+ {
+  "nom": "Rives de l'Yon",
+  "code": "85213",
+  "codesPostaux": [
+   "85310"
+  ],
+  "centre": {
+   "type": "Point",
+   "coordinates": [
+    -1.3345,
+    46.5896
+   ]
+  },
+  "codeDepartement": "85",
+  "codeRegion": "52"
+ },
+ {
+  "nom": "Miquelon-Langlade",
+  "code": "97501",
+  "codesPostaux": [
+   "97500"
+  ],
+  "centre": {
+   "type": "Point",
+   "coordinates": [
+    -56.3405,
+    46.9711
+   ]
+  },
+  "codeDepartement": "975",
+  "codeRegion": "975"
+ }
+]

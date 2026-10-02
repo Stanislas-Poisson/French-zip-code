@@ -1,24 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
+use App\Contracts\FileDownloader;
+use App\Services\Sources\HttpFileDownloader;
+use App\Services\UpdateProgress;
 use Illuminate\Support\ServiceProvider;
 
-class AppServiceProvider extends ServiceProvider
+final class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
-    }
-
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        //
+        $this->app->bind(FileDownloader::class, HttpFileDownloader::class);
+        $this->app->singleton(UpdateProgress::class);
     }
 }

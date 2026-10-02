@@ -1,0 +1,12 @@
+# PHPStan configuration (laravel-dev-tools, application mode)
+# The package app.neon cannot be included as is: its Larastan include is relative to the package directory.
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/zairakai/laravel-dev-tools/config/base.neon
+    - config/dev-tools/baseline.neon
+
+parameters:
+    paths:
+        - app
+        - tests
+    tmpDir: build/phpstan

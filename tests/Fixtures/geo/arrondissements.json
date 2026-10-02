@@ -1,0 +1,50 @@
+[
+ {
+  "nom": "Marseille 1er Arrondissement",
+  "code": "13201",
+  "codesPostaux": [
+   "13001"
+  ],
+  "centre": {
+   "type": "Point",
+   "coordinates": [
+    5.3828,
+    43.3002
+   ]
+  },
+  "codeDepartement": "13",
+  "codeRegion": "93"
+ },
+ {
+  "nom": "Paris 1er Arrondissement",
+  "code": "75101",
+  "codesPostaux": [
+   "75001"
+  ],
+  "centre": {
+   "type": "Point",
+   "coordinates": [
+    2.3359,
+    48.862
+   ]
+  },
+  "codeDepartement": "75",
+  "codeRegion": "11"
+ },
+ {
+  "nom": "Paris 2e Arrondissement",
+  "code": "75102",
+  "codesPostaux": [
+   "75002"
+  ],
+  "centre": {
+   "type": "Point",
+   "coordinates": [
+    2.3411,
+    48.8677
+   ]
+  },
+  "codeDepartement": "75",
+  "codeRegion": "11"
+ }
+]

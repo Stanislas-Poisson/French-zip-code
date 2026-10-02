@@ -1,12 +1,36 @@
 services:
   php:
-    build: ./docker/php
-    # Keep the container alive so `make ssh` can attach to it.
+    image: zairakai/php:latest-test
+    # The image is a PHP-FPM one: keep it alive as a plain CLI container and drop its FPM healthcheck and banner.
+    entrypoint: []
     command: ["sleep", "infinity"]
+    healthcheck:
+      disable: true
     volumes:
       - .:/var/www/html:rw
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/zz-project.ini:ro
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Runs the queues of the update (Horizon supervises the workers). Started by `make start`.
+  horizon:
+    image: zairakai/php:latest-test
+    profiles: [queue]
+    entrypoint: []
+    command: ["php", "artisan", "horizon"]
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html:rw
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/zz-project.ini:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   mysql:
@@ -18,15 +42,29 @@ services:
       - db_data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: frenchzipcode
-      MYSQL_USER: frenchzipcode
-      MYSQL_PASSWORD: frenchzipcode
+      MYSQL_DATABASE: frenchpostalcode
+      MYSQL_USER: frenchpostalcode
+      MYSQL_PASSWORD: frenchpostalcode
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
       interval: 5s
       timeout: 5s
       retries: 20
 
+  redis:
+    image: redis:8-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
 volumes:
   db_data:
+    driver: local
+  redis_data:
     driver: local
