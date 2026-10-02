@@ -9,6 +9,7 @@ use App\Data\Insee\CogImportFiles;
 use App\Data\Sources\DownloadedFile;
 use App\Data\Sources\FetchedSources;
 use App\Services\Sources\InseeCogLocator;
+use App\Services\UpdateProgress;
 
 final readonly class FetchSources
 {
@@ -30,6 +31,7 @@ final readonly class FetchSources
         private FileDownloader $fileDownloader,
         private InseeCogLocator $inseeCogLocator,
         private RecordSnapshot $recordSnapshot,
+        private UpdateProgress $updateProgress,
     ) {}
 
     /**
@@ -47,6 +49,7 @@ final readonly class FetchSources
         $cogDirectory = $directory . '/' . self::COG . '/' . $cogVintage->year;
 
         foreach (self::COG_FILES as $name) {
+            $this->updateProgress->step(sprintf('Downloading %s (INSEE COG %d)', $name, $cogVintage->year));
             $file         = $this->fileDownloader->download(
                 $cogVintage->url($name),
                 $cogDirectory . '/' . $name . '.csv',
@@ -60,6 +63,8 @@ final readonly class FetchSources
             (string) $cogVintage->year,
             new DownloadedFile($cogDirectory, hash('sha256', implode('', $checksums)), 0),
         );
+
+        $this->updateProgress->step('Downloading the La Poste postal codes');
 
         $laPosteUrl     = config('sources.laposte.file_url');
         $downloadedFile = $this->fileDownloader->download(

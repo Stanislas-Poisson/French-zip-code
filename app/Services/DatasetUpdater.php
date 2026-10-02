@@ -31,6 +31,7 @@ final readonly class DatasetUpdater
         private ImportOfficialSources $importOfficialSources,
         private ComputeDepartmentCoordinates $computeDepartmentCoordinates,
         private ReconcileDataset $reconcileDataset,
+        private UpdateProgress $updateProgress,
     ) {}
 
     /**
@@ -47,11 +48,18 @@ final readonly class DatasetUpdater
             ->map(static fn (mixed $id): int => is_numeric($id) ? (int) $id : 0)
             ->all();
 
+        $this->updateProgress->finish();
+
         if ([] === $cityIds) {
             $this->finalize($runId, $snapshotIds, $failedBanJobs);
 
             return;
         }
+
+        $this->updateProgress->start(
+            sprintf('Asking Nominatim for %d cities without a BAN address (one request per second)', count($cityIds)),
+            count($cityIds),
+        );
 
         Bus::batch(array_map(static fn (int $id): GeocodeCityJob => new GeocodeCityJob($id), $cityIds))
             ->name('nominatim-fallback:' . $runId)
@@ -79,6 +87,8 @@ final readonly class DatasetUpdater
             return;
         }
 
+        $this->updateProgress->start(sprintf('Computing the GPS point of each postal code (%d BAN files)', count($jobs)), count($jobs));
+
         Bus::batch($jobs)
             ->name('ban-coordinates:' . $runId)
             ->allowFailures()
@@ -93,6 +103,8 @@ final readonly class DatasetUpdater
      */
     public function finalize(string $runId, array $snapshotIds, int $failedBanJobs): ReconciliationReport
     {
+        $this->updateProgress->step('Checking that nothing is missing');
+
         $reconciliationReport = $this->reconcileDataset->execute($runId, $snapshotIds, $failedBanJobs);
 
         Cache::forever(self::REPORT_CACHE_KEY, [

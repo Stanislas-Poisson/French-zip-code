@@ -27,6 +27,8 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SOURCES_DOWNLOAD_INITIAL_DELAY_MS" value="0"/>
+        <env name="SOURCES_DOWNLOAD_MAX_DELAY_MS" value="0"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
     </php>

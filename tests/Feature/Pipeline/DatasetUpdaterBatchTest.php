@@ -14,6 +14,7 @@ use App\Models\City;
 use App\Models\Commune;
 use App\Models\Department;
 use App\Services\DatasetUpdater;
+use App\Services\UpdateProgress;
 use Carbon\CarbonImmutable;
 use Illuminate\Bus\PendingBatch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -115,7 +116,7 @@ final class DatasetUpdaterBatchTest extends TestCase
     #[Test]
     public function it_ignores_a_city_that_no_longer_exists_when_geocoding(): void
     {
-        (new GeocodeCityJob(999_999))->handle($this->app->make(GeocodeCityWithNominatim::class));
+        (new GeocodeCityJob(999_999))->handle($this->app->make(GeocodeCityWithNominatim::class), $this->app->make(UpdateProgress::class));
 
         $this->assertSame(0, City::query()->count());
     }

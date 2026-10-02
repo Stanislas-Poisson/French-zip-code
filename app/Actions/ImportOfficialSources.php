@@ -7,6 +7,7 @@ namespace App\Actions;
 use App\Data\Sources\FetchedSources;
 use App\Services\Parsers\LaPoste\PostalCodeParser;
 use App\Services\Sources\GeoApiClient;
+use App\Services\UpdateProgress;
 use Carbon\CarbonImmutable;
 
 final readonly class ImportOfficialSources
@@ -19,6 +20,7 @@ final readonly class ImportOfficialSources
         private LinkReplacedCities $linkReplacedCities,
         private PostalCodeParser $postalCodeParser,
         private GeoApiClient $geoApiClient,
+        private UpdateProgress $updateProgress,
     ) {}
 
     /**
@@ -40,6 +42,7 @@ final readonly class ImportOfficialSources
         $unmatched   = [];
 
         if ($importCog) {
+            $this->updateProgress->step('Importing the INSEE COG (regions, departments, communes, history)');
             $this->importCog->execute(
                 $fetchedSources->cogFiles,
                 CarbonImmutable::parse($fetchedSources->cogYear . '-01-01'),
@@ -48,6 +51,8 @@ final readonly class ImportOfficialSources
             $fetchedSources->cogSnapshot->update(['imported_at' => now()]);
             $snapshotIds[] = $fetchedSources->cogSnapshot->id;
         }
+
+        $this->updateProgress->step('Importing the postal codes of La Poste');
 
         $result = $this->importCities->execute(
             $this->postalCodeParser->parse($fetchedSources->laPostePath),
@@ -58,7 +63,10 @@ final readonly class ImportOfficialSources
         $snapshotIds[] = $fetchedSources->laPosteSnapshot->id;
         $unmatched     = $result['unmatched'];
 
+        $this->updateProgress->step('Linking the cities replaced by another one');
         $this->linkReplacedCities->execute();
+
+        $this->updateProgress->step('Reading the commune centres (geo.api.gouv.fr)');
         $this->applyCommuneCentres->execute($this->geoApiClient->communes());
         $this->fillCityCoordinatesFromCommuneCentre->execute();
 

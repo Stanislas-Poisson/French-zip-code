@@ -7,6 +7,7 @@ namespace App\Jobs;
 use App\Actions\GeocodeCityWithNominatim;
 use App\Jobs\Middleware\ThrottleNominatim;
 use App\Models\City;
+use App\Services\UpdateProgress;
 use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -28,15 +29,15 @@ final class GeocodeCityJob implements ShouldQueue
         $this->onQueue('nominatim');
     }
 
-    public function handle(GeocodeCityWithNominatim $geocodeCityWithNominatim): void
+    public function handle(GeocodeCityWithNominatim $geocodeCityWithNominatim, UpdateProgress $updateProgress): void
     {
         $city = City::query()->find($this->cityId);
 
-        if (null === $city) {
-            return;
+        if ($city instanceof City) {
+            $geocodeCityWithNominatim->execute($city);
         }
 
-        $geocodeCityWithNominatim->execute($city);
+        $updateProgress->advance();
     }
 
     /**

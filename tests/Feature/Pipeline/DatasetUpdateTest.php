@@ -134,6 +134,18 @@ final class DatasetUpdateTest extends TestCase
             ->assertSuccessful();
     }
 
+    #[Test]
+    public function it_tells_what_it_is_doing_while_it_runs(): void
+    {
+        $this->command('dataset:update', ['--sync' => true])
+            ->expectsOutputToContain('Downloading the La Poste postal codes')
+            ->expectsOutputToContain('Importing the postal codes of La Poste')
+            ->expectsOutputToContain('Computing the GPS point of each postal code')
+            ->expectsOutputToContain('Checking that nothing is missing')
+            ->expectsOutputToContain('Current cities')
+            ->assertSuccessful();
+    }
+
     private function answer(Request $request): mixed
     {
         $url      = $request->url();

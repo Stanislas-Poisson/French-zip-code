@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\RunDatasetUpdateJob;
 use App\Services\DatasetUpdater;
+use App\Services\UpdateProgress;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -18,7 +19,7 @@ final class UpdateDatasetCommand extends Command
         {--force : Import again the files that did not change}
         {--skip-coordinates : Do not compute the point of each postal code}';
 
-    public function handle(DatasetUpdater $datasetUpdater): int
+    public function handle(DatasetUpdater $datasetUpdater, UpdateProgress $updateProgress): int
     {
         $runId           = (string) Str::uuid();
         $force           = (bool) $this->option('force');
@@ -32,10 +33,13 @@ final class UpdateDatasetCommand extends Command
         }
 
         config(['queue.default' => 'sync']);
+        $updateProgress->attach($this->output);
 
         $result = $datasetUpdater->run($runId, $force, $withCoordinates);
+        $updateProgress->finish();
 
         $this->info('Update ' . $runId . ': ' . $result['status'] . '.');
+        $this->call('dataset:status');
 
         return self::SUCCESS;
     }

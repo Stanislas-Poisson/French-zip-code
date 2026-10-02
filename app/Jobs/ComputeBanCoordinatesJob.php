@@ -6,6 +6,7 @@ namespace App\Jobs;
 
 use App\Actions\ComputeDepartmentCoordinates;
 use App\Actions\ReconcileDataset;
+use App\Services\UpdateProgress;
 use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -45,10 +46,11 @@ final class ComputeBanCoordinatesJob implements ShouldQueue
         Cache::put(ReconcileDataset::cacheKey($this->runId, $this->departmentCode), 'failed', now()->addDay());
     }
 
-    public function handle(ComputeDepartmentCoordinates $computeDepartmentCoordinates): void
+    public function handle(ComputeDepartmentCoordinates $computeDepartmentCoordinates, UpdateProgress $updateProgress): void
     {
         $result = $computeDepartmentCoordinates->execute($this->departmentCode);
 
         Cache::put(ReconcileDataset::cacheKey($this->runId, $this->departmentCode), $result, now()->addDay());
+        $updateProgress->advance();
     }
 }
