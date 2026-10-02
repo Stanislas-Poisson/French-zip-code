@@ -22,16 +22,25 @@ The dataset files are produced by `make export` and attached to the GitHub relea
 
 3. Create the version tag, reserved to maintainers and written `MAJOR.MINOR.PATCH` without a prefix (`4.0.0`), on `main`, once the CI is green.
 
-4. Create the GitHub release with the files from `storage/app/exports` as attachments.
+4. Zip the exports and write the checksums.
 
    ```bash
-   cd storage/app/exports
-   gh release create 4.0.0 --generate-notes csv/*.csv json/*.json sql/dataset.sql statistics.json
+   make release-files VERSION=4.0.0
    ```
 
-   The notes are generated from the Conventional Commits between two tags, which is why their format matters.
+   The files to attach are written to `storage/app/exports/release`: one zip archive per format (`french-postal-code-4.0.0-csv.zip`, `-json.zip` and `-sql.zip`), `statistics.json` and `SHA256SUMS`. `statistics.json` must keep that name: the dataset card of the README reads it from the latest release.
 
-5. Publish the same files on data.gouv.fr.
+5. Create the GitHub release with these files as attachments. Write the release notes beforehand in a file, and keep `--generate-notes` to add the list of the merged pull requests.
+
+   ```bash
+   gh release create 4.0.0 --verify-tag --title "French-postal-code-4.0.0" \
+     --notes-file RELEASE-NOTES.md --generate-notes --latest \
+     storage/app/exports/release/*
+   ```
+
+   Add `--draft` to check the page before publishing it. The generated notes come from the titles of the merged pull requests, which is why their format matters.
+
+6. Publish the same files on data.gouv.fr.
 
 ## Versioning
 
