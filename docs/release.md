@@ -28,7 +28,7 @@ The dataset files are produced by `make export` and attached to the GitHub relea
    make release-files VERSION=4.0.0
    ```
 
-   The files to attach are written to `storage/app/exports/release`: one zip archive per format (`french-postal-code-4.0.0-csv.zip`, `-json.zip` and `-sql.zip`), `statistics.json` and `SHA256SUMS`. `statistics.json` must keep that name: the dataset card of the README reads it from the latest release.
+   The files to attach are written to `storage/app/exports/release`: one zip archive per format (`french-postal-code-4.0.0-csv.zip`, `-json.zip` and `-sql.zip`), the files of the Composer package (`french-postal-code-4.0.0-package.zip`), `statistics.json` and `SHA256SUMS`. The package archive holds the tables with the identifiers of the relations and a manifest; the Composer package `stanislas-poisson/french-postal-code` loads it, it is not a file to open. `statistics.json` must keep that name: the dataset card of the README reads it from the latest release.
 
 5. Create the GitHub release with these files as attachments. Write the release notes beforehand in a file, and keep `--generate-notes` to add the list of the merged pull requests.
 
