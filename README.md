@@ -1,4 +1,25 @@
+<div align="center">
+
 # French Zip-Code
+
+**Regions, departments, communes and postal codes of France, with one GPS point per postal code and the history of changes.**
+
+[![CI][badge-ci]][ci]
+[![Release][badge-release]][releases]
+[![License: MIT][badge-license]][license]
+[![PHP 8.4][badge-php]][composer]
+[![Laravel 13][badge-laravel]][composer]
+[![PHPStan max][badge-phpstan]][phpstan]
+[![Conventional Commits][badge-commits]][conventional-commits]
+
+[![data.gouv.fr views][badge-dg-views]][data-gouv]
+[![data.gouv.fr downloads][badge-dg-downloads]][data-gouv]
+[![data.gouv.fr reuses][badge-dg-reuses]][data-gouv]
+[![GitHub stars][badge-stars]][stargazers]
+
+</div>
+
+---
 
 Dataset of the regions, departments, communes and postal codes of France (metropolitan France, DROM and COM), with **one GPS point per postal code** and the **history of changes** (mergers, code changes, creations, deletions).
 
@@ -132,6 +153,21 @@ The architecture is described in [`docs/architecture.md`][architecture] and how 
 
 [MIT][license] for the code. The data remain subject to the licences of their sources (see above).
 
+---
+
+<div align="center">
+
+Made by Stanislas Poisson (Zairakai)
+
+[![GitHub][badge-github]][github]
+[![GitLab][badge-gitlab]][gitlab]
+[![LinkedIn][badge-linkedin]][linkedin]
+[![Twitch][badge-twitch]][twitch]
+[![Linktree][badge-linktree]][linktree]
+[![Support the stream][badge-support]][support]
+
+</div>
+
 [ban]: https://adresse.data.gouv.fr/
 [nominatim]: https://nominatim.org/
 [insee-cog]: https://www.insee.fr/fr/information/8377162
@@ -145,3 +181,32 @@ The architecture is described in [`docs/architecture.md`][architecture] and how 
 [architecture]: docs/architecture.md
 [release]: docs/release.md
 [license]: LICENSE
+
+[ci]: https://github.com/Stanislas-Poisson/French-zip-code/actions/workflows/ci.yml
+[composer]: composer.json
+[phpstan]: https://phpstan.org/user-guide/rule-levels
+[conventional-commits]: https://www.conventionalcommits.org/
+[github]: https://github.com/Stanislas-Poisson
+[gitlab]: https://gitlab.com/Stanislas-Poisson
+[linkedin]: https://www.linkedin.com/in/stanislasp/
+[twitch]: https://twitch.tv/zairakai
+[linktree]: https://linktr.ee/Zairakai
+[support]: https://pots.lydia.me/collect/pots?id=18363-dons-stream
+[badge-ci]: https://img.shields.io/github/actions/workflow/status/Stanislas-Poisson/French-zip-code/ci.yml?branch=main&label=ci&style=flat-square&logo=githubactions&logoColor=white
+[badge-release]: https://img.shields.io/github/v/release/Stanislas-Poisson/French-zip-code?style=flat-square&logo=github&logoColor=white
+[badge-license]: https://img.shields.io/badge/license-MIT-2ea44f?style=flat-square
+[badge-php]: https://img.shields.io/badge/php-8.4-777BB4?style=flat-square&logo=php&logoColor=white
+[badge-laravel]: https://img.shields.io/badge/laravel-13-FF2D20?style=flat-square&logo=laravel&logoColor=white
+[badge-phpstan]: https://img.shields.io/badge/phpstan-max-4F5B93?style=flat-square
+[badge-commits]: https://img.shields.io/badge/conventional_commits-1.0.0-FE5196?style=flat-square&logo=conventionalcommits&logoColor=white
+[badge-github]: https://img.shields.io/badge/GitHub-8b96a3?style=flat-square&logo=github&logoColor=white
+[badge-gitlab]: https://img.shields.io/badge/GitLab-fc6d26?style=flat-square&logo=gitlab&logoColor=white
+[badge-linkedin]: https://img.shields.io/badge/LinkedIn-0a66c2?style=flat-square&logo=linkedin&logoColor=white
+[badge-twitch]: https://img.shields.io/badge/Twitch-9146ff?style=flat-square&logo=twitch&logoColor=white
+[badge-linktree]: https://img.shields.io/badge/Linktree-43e55e?style=flat-square&logo=linktree&logoColor=white
+[badge-support]: https://img.shields.io/badge/Support_the_stream-ff5a5f?style=flat-square&logo=githubsponsors&logoColor=white
+[stargazers]: https://github.com/Stanislas-Poisson/French-zip-code/stargazers
+[badge-dg-views]: https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fwww.data.gouv.fr%2Fapi%2F1%2Fdatasets%2Fregions-departements-villes-et-villages-de-france-et-doutre-mer%2F&query=%24.metrics.views&label=data.gouv%20views&color=0053b3&style=flat-square
+[badge-dg-downloads]: https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fwww.data.gouv.fr%2Fapi%2F1%2Fdatasets%2Fregions-departements-villes-et-villages-de-france-et-doutre-mer%2F&query=%24.metrics.resources_downloads&label=data.gouv%20downloads&color=0053b3&style=flat-square
+[badge-dg-reuses]: https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fwww.data.gouv.fr%2Fapi%2F1%2Fdatasets%2Fregions-departements-villes-et-villages-de-france-et-doutre-mer%2F&query=%24.metrics.reuses&label=data.gouv%20reuses&color=0053b3&style=flat-square
+[badge-stars]: https://img.shields.io/github/stars/Stanislas-Poisson/French-zip-code?style=flat-square&logo=github&logoColor=white
