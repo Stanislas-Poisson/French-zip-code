@@ -31,10 +31,10 @@ Tours (37261) has three postal codes, and each one has its own point:
 | 37100 | 47.4164 | 0.6930 | 10,489 |
 | 37200 | 47.3661 | 0.7044 | 1,007 |
 
-The point of a postal code is the **median of the address positions** of the [Base Adresse Nationale](https://adresse.data.gouv.fr/) (BAN) for that postal code in that commune. The `coordinate_source` column always tells where the point comes from:
+The point of a postal code is the **median of the address positions** of the [Base Adresse Nationale][ban] (BAN) for that postal code in that commune. The `coordinate_source` column always tells where the point comes from:
 
 1. `ban`: median of the BAN addresses (the vast majority of cities).
-2. `nominatim`: search of the postal code and the commune on [Nominatim](https://nominatim.org/), for cities with no address in the BAN.
+2. `nominatim`: search of the postal code and the commune on [Nominatim][nominatim], for cities with no address in the BAN.
 3. `commune_centre`: centre of the commune, as the last fallback.
 
 `address_count` gives the number of addresses used: a postal code with very few addresses is less reliable.
@@ -43,11 +43,11 @@ The point of a postal code is the **median of the address positions** of the [Ba
 
 | Source | Usage | Licence |
 | :--- | :--- | :--- |
-| [INSEE, Code officiel géographique](https://www.insee.fr/fr/information/8377162) | Regions, departments, communes, history since 1943 and commune events. | Licence Ouverte |
-| [La Poste, base officielle des codes postaux](https://data.laposte.fr/datasets/laposte-hexasmal) | Link between a commune and its postal codes. | Licence Ouverte |
-| [geo.api.gouv.fr](https://geo.api.gouv.fr/) | Centre of each commune. | Licence Ouverte |
-| [Base Adresse Nationale](https://adresse.data.gouv.fr/) | GPS point of each postal code. | Licence Ouverte |
-| [Nominatim](https://nominatim.org/) (OpenStreetMap) | Fallback for cities with no address in the BAN. | ODbL |
+| [INSEE, Code officiel géographique][insee-cog] | Regions, departments, communes, history since 1943 and commune events. | Licence Ouverte |
+| [La Poste, base officielle des codes postaux][laposte] | Link between a commune and its postal codes. | Licence Ouverte |
+| [geo.api.gouv.fr][geo-api] | Centre of each commune. | Licence Ouverte |
+| [Base Adresse Nationale][ban] | GPS point of each postal code. | Licence Ouverte |
+| [Nominatim][nominatim] (OpenStreetMap) | Fallback for cities with no address in the BAN. | ODbL |
 
 ## Attaching addresses
 
@@ -64,7 +64,11 @@ $address = Address::create([
     'city_id' => $city->id,
 ]);
 
-$address->city->commune->department->region->name; // Centre-Val de Loire
+$address->city
+    ->commune
+    ->department
+    ->region
+    ->name; // Centre-Val de Loire
 ```
 
 For the `addresses.city_id` foreign key to work, the `cities` table must live in the same database as `addresses`.
@@ -90,7 +94,7 @@ The result follows succession chains (A to B to C), reports a commune that **dis
 
 ## Usage
 
-Requirements: [Docker](https://www.docker.com/) and [Make](https://www.gnu.org/software/make/).
+Requirements: [Docker][docker] and [Make][make].
 
 ```bash
 make start      # starts PHP 8.4, MySQL 8.4, Redis and Horizon, installs the dependencies, migrates the database
@@ -111,7 +115,7 @@ The matching `php artisan` commands:
 
 ## Published files
 
-The exports are attached to the [releases](https://github.com/Stanislas-Poisson/French-zip-code/releases) of the repository and published on [data.gouv.fr](https://www.data.gouv.fr/datasets/regions-departements-villes-et-villages-de-france-et-doutre-mer). They contain one file per table, in CSV, JSON and SQL.
+The exports are attached to the [releases][releases] of the repository and published on [data.gouv.fr][data-gouv]. They contain one file per table, in CSV, JSON and SQL.
 
 ## Development
 
@@ -120,10 +124,24 @@ make quality    # Pint, PHPStan (max level), Rector, PHPInsights, Markdownlint
 make test       # PHPUnit
 ```
 
-The repository uses [`zairakai/laravel-dev-tools`](https://packagist.org/packages/zairakai/laravel-dev-tools) (quality tools, git hooks, Makefile).  
+The repository uses [`zairakai/laravel-dev-tools`][dev-tools] (quality tools, git hooks, Makefile).  
 Commits follow Conventional Commits with the ticket number (`type(scope): #123 subject`) and the repository only accepts merge commits on rebased branches.  
-The architecture is described in [`docs/architecture.md`](docs/architecture.md) and how to publish a version in [`docs/release.md`](docs/release.md).
+The architecture is described in [`docs/architecture.md`][architecture] and how to publish a version in [`docs/release.md`][release].
 
 ## Licence
 
-[MIT](LICENSE) for the code. The data remain subject to the licences of their sources (see above).
+[MIT][license] for the code. The data remain subject to the licences of their sources (see above).
+
+[ban]: https://adresse.data.gouv.fr/
+[nominatim]: https://nominatim.org/
+[insee-cog]: https://www.insee.fr/fr/information/8377162
+[laposte]: https://data.laposte.fr/datasets/laposte-hexasmal
+[geo-api]: https://geo.api.gouv.fr/
+[docker]: https://www.docker.com/
+[make]: https://www.gnu.org/software/make/
+[releases]: https://github.com/Stanislas-Poisson/French-zip-code/releases
+[data-gouv]: https://www.data.gouv.fr/datasets/regions-departements-villes-et-villages-de-france-et-doutre-mer
+[dev-tools]: https://packagist.org/packages/zairakai/laravel-dev-tools
+[architecture]: docs/architecture.md
+[release]: docs/release.md
+[license]: LICENSE

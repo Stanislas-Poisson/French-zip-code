@@ -237,7 +237,11 @@ $address = Address::create([
 $address->city->postal_code;                           // 37200
 $address->city->commune->name;                         // Tours
 $address->city->commune->department->name;             // Indre-et-Loire
-$address->city->commune->department->region->name;     // Centre-Val de Loire
+$address->city
+    ->commune
+    ->department
+    ->region
+    ->name;                                            // Centre-Val de Loire
 $address->city->latitude;                              // 47.3661 (point of 37200)
 
 // 3. Later, after a dataset update: re-point the addresses.
