@@ -29,7 +29,7 @@ final class ReferenceChangesTest extends TestCase
 
         $this->importRegions('2027', [
             new RegionRecord('24', 'Centre', '45234'),
-            new RegionRecord('99', 'Nouvelle région', '99999'),
+            new RegionRecord('99', 'New region', '99999'),
         ]);
 
         $changes = ReferenceChange::query()->orderBy('entity_code')->get();

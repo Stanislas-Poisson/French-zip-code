@@ -26,7 +26,7 @@ final class GeoApiClientTest extends TestCase
     {
         Http::fake(['*' => Http::response([[
             'code'         => '00002',
-            'nom'          => 'Mal placée',
+            'nom'          => 'Misplaced',
             'codesPostaux' => ['00002'],
             'centre'       => ['coordinates' => ['east', 'north']],
         ]])]);

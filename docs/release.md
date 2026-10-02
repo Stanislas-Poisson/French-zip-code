@@ -1,36 +1,36 @@
-# Publier une version
+# Publishing a release
 
-Les fichiers du jeu de données sont produits par `make export` et attachés à la release GitHub. Ils ne sont pas commités dans le dépôt.
+The dataset files are produced by `make export` and attached to the GitHub release. They are not committed to the repository.
 
-## Étapes
+## Steps
 
-1. Mettre à jour le jeu de données et vérifier le rapport.
+1. Update the dataset and check the report.
 
    ```bash
    make update-sync
    make status
    ```
 
-   Le rapport doit indiquer `"complete":true` : chaque ville a un point, chaque département a été traité et aucun job n'a échoué.
+   The report must show `"complete":true`: every city has a point, every department was processed and no job failed.
 
-2. Exporter les fichiers.
+2. Export the files.
 
    ```bash
    make export
    ```
 
-3. Créer le tag de version, réservé aux mainteneurs et préfixé par `v` (`v4.0.0`), sur `main`, une fois la CI verte.
+3. Create the version tag, reserved to maintainers and prefixed with `v` (`v4.0.0`), on `main`, once the CI is green.
 
-4. Créer la release GitHub avec les fichiers de `storage/app/exports` en pièces jointes.
+4. Create the GitHub release with the files from `storage/app/exports` as attachments.
 
    ```bash
    gh release create v4.0.0 --generate-notes storage/app/exports/sql/dataset.sql
    ```
 
-   Les notes sont générées à partir des Conventional Commits entre deux tags, d'où l'importance de leur format.
+   The notes are generated from the Conventional Commits between two tags, which is why their format matters.
 
-5. Publier les mêmes fichiers sur data.gouv.fr.
+5. Publish the same files on data.gouv.fr.
 
-## Numérotation
+## Versioning
 
-Le numéro de version suit SemVer. Un changement du schéma des fichiers, par exemple la suppression d'une colonne, est un changement majeur.
+The version number follows SemVer. A change to the schema of the files, for example removing a column, is a major change.
