@@ -46,7 +46,7 @@ final class BuildDatasetStatistics
         $snapshot = Snapshot::query()
             ->where('source', $source)
             ->whereNotNull('imported_at')
-            ->orderByDesc('imported_at')
+            ->latest('imported_at')
             ->orderByDesc('id')
             ->first();
 
