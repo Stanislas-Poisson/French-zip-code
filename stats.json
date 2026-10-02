@@ -2,11 +2,17 @@
   "data_gouv": {
     "discussions": 5,
     "downloads": 11381,
+    "formats": {
+      "CSV": 5476,
+      "JSON": 1977,
+      "SQL": 3928
+    },
     "last_update": "2018-08-02T09:03:45.035000+00:00",
     "quality": 78,
     "reuses": 3,
     "views": 49806
   },
+  "dataset": null,
   "github": {
     "clones_total": 209,
     "last_commit": "2026-10-01T15:32:10Z",
