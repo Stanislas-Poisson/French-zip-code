@@ -101,6 +101,21 @@ build-dataset: ## Update the dataset then export it, stopping before the export 
 build-dataset-force: ## Same as build-dataset, importing every file again even if it did not change
 	@$(MAKE) --no-print-directory build-dataset FORCE=1
 
+RELEASE_DIR = $(EXPORT_DIR)/release
+
+.PHONY: release-files
+release-files: ## Zip the exports and write the checksums to attach to a release (VERSION=4.0.0)
+	@test -n "$(VERSION)" || { echo "VERSION is required, for example: make release-files VERSION=4.0.0"; exit 1; }
+	@test -f $(EXPORT_DIR)/statistics.json || { echo "No export found in $(EXPORT_DIR): run make build-dataset first"; exit 1; }
+	@rm -rf $(RELEASE_DIR) && mkdir -p $(RELEASE_DIR)
+	@zip -qj $(RELEASE_DIR)/french-postal-code-$(VERSION)-csv.zip $(EXPORT_DIR)/csv/*.csv
+	@zip -qj $(RELEASE_DIR)/french-postal-code-$(VERSION)-json.zip $(EXPORT_DIR)/json/*.json
+	@zip -qj $(RELEASE_DIR)/french-postal-code-$(VERSION)-sql.zip $(EXPORT_DIR)/sql/dataset.sql
+	@cp $(EXPORT_DIR)/statistics.json $(RELEASE_DIR)/statistics.json
+	@cd $(RELEASE_DIR) && sha256sum french-postal-code-$(VERSION)-*.zip statistics.json > SHA256SUMS
+	@echo "Files to attach to the release, in $(RELEASE_DIR):"
+	@cd $(RELEASE_DIR) && ls -l | awk 'NR>1 {printf "  %10d  %s\n", $$5, $$9}'
+
 .PHONY: resolve
 resolve: ## Find where an old commune code points to today (CODE=37261 POSTAL_CODE=37000 DATE=2015-01-01)
 	@$(ARTISAN) dataset:resolve $(CODE) $(if $(POSTAL_CODE),--postal-code=$(POSTAL_CODE)) $(if $(DATE),--date=$(DATE))
