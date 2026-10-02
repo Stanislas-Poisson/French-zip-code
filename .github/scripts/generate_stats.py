@@ -2,7 +2,7 @@
 """Builds the statistics cards of the README.
 
 Reads the public data.gouv.fr dataset and the GitHub repository, then writes
-`stats.svg` (usage) and `stats.json` (history) in OUT_DIR.
+`stats.svg` (usage), `dataset.svg` (content and downloads by format) and `stats.json` (history) in OUT_DIR.
 
 GitHub keeps the traffic (views and clones) for 14 days only: the daily values
 are merged into the `stats.json` found in OUT_DIR so the totals keep growing.
@@ -19,6 +19,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -89,7 +90,13 @@ def collect_data_gouv() -> dict:
     dataset = fetch(f"https://www.data.gouv.fr/api/1/datasets/{DATASET}/") or {}
     metrics = dataset.get("metrics", {})
     quality = dataset.get("quality", {}).get("score")
+    formats: dict[str, int] = {}
+    for resource in dataset.get("resources", []):
+        match = re.match(r"\[(\w+)", resource.get("title", ""))
+        if match:
+            formats[match.group(1)] = formats.get(match.group(1), 0) + (resource.get("metrics", {}).get("views") or 0)
     return {
+        "formats": formats,
         "downloads": metrics.get("resources_downloads"),
         "views": metrics.get("views"),
         "reuses": metrics.get("reuses"),
@@ -97,6 +104,15 @@ def collect_data_gouv() -> dict:
         "quality": None if quality is None else round(quality * 100),
         "last_update": dataset.get("last_update"),
     }
+
+
+def collect_dataset() -> dict | None:
+    """Reads `statistics.json`, attached to the latest release by `make export`."""
+    release = github("/releases/latest") or {}
+    for asset in release.get("assets", []):
+        if asset["name"] == "statistics.json":
+            return fetch(asset["browser_download_url"])
+    return None
 
 
 def merge_traffic(history: dict, kind: str, payload: dict | None) -> None:
@@ -142,6 +158,7 @@ STYLE = """
   .note  { font-size:11px; }
   .icon { fill:#1f2328; }
   .frame { fill:#ffffff; stroke:#d0d7de; }
+  .bar { fill:#000091; }
   @media (prefers-color-scheme: dark) {
     .card { fill:#0d1117; stroke:#30363d; }
     .tile { fill:#161b22; }
@@ -149,6 +166,7 @@ STYLE = """
     .label, .note { fill:#8b949e; }
     .icon { fill:#e6edf3; }
     .frame { stroke:#30363d; }
+    .bar { fill:#8585f6; }
   }
 """
 
@@ -161,11 +179,16 @@ def tile(x: int, y: int, value: str, label: str) -> str:
     )
 
 
-def panel(x: int, title: str, icon: str, tiles: list[tuple[str, str]], note: str) -> str:
-    cells = "".join(tile(x + 20 + (index % 3) * 128, 62 + (index // 3) * 70, value, label) for index, (value, label) in enumerate(tiles))
+def tiles(x: int, items: list[tuple[str, str]]) -> str:
+    return "".join(
+        tile(x + 20 + (index % 3) * 128, 62 + (index // 3) * 70, value, label) for index, (value, label) in enumerate(items)
+    )
+
+
+def panel(x: int, title: str, icon: str, body: str, note: str) -> str:
     return (
         f'<rect x="{x}" y="0" width="408" height="238" rx="10" class="card"/>'
-        f'{icon}<text x="{x + 56}" y="35" class="title">{escape(title)}</text>{cells}'
+        f'{icon}<text x="{x + 56}" y="35" class="title">{escape(title)}</text>{body}'
         f'<text x="{x + 20}" y="218" class="note">{escape(note)}</text>'
     )
 
@@ -183,14 +206,14 @@ def stats_svg(data_gouv: dict, hub: dict, logo: bytes | None) -> str:
         0,
         "data.gouv.fr",
         logo_icon,
-        [
+        tiles(0, [
             (compact(data_gouv["downloads"]), "downloads"),
             (compact(data_gouv["views"]), "views"),
             (compact(data_gouv["reuses"]), "reuses"),
             (compact(data_gouv["discussions"]), "open discussions"),
             ("–" if data_gouv["quality"] is None else f'{data_gouv["quality"]}%', "metadata quality"),
             (month_year(data_gouv["last_update"]), "last update"),
-        ],
+        ]),
         "Public figures of the dataset page.",
     )
     since = month_year(hub["tracked_since"]) if hub["tracked_since"] else None
@@ -198,19 +221,62 @@ def stats_svg(data_gouv: dict, hub: dict, logo: bytes | None) -> str:
         428,
         "GitHub",
         github_icon,
-        [
+        tiles(428, [
             (compact(hub["release_downloads"]), "release downloads"),
             (compact(hub["views_total"]), "repository views"),
             (compact(hub["clones_total"]), "git clones"),
             (compact(hub["open_issues"]), "open issues"),
             (compact(hub["visitors_14d"]), "visitors (14 days)"),
             (month_year(hub["last_commit"]), "last commit"),
-        ],
+        ]),
         f"Views and clones counted since {since}." if since else "Views and clones need a token with push access.",
     )
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 838 240" width="838" height="240" role="img" aria-label="Usage statistics">'
         f"<style>{STYLE}</style>{left}{right}</svg>\n"
+    )
+
+
+def dataset_svg(dataset: dict | None, formats: dict[str, int]) -> str:
+    box_icon = (
+        '<g transform="translate(20 15) scale(1.1)"><path class="icon" '
+        'd="M12 1 3 5.5v9L12 19l9-4.5v-9zm0 2.2 5.9 2.9L12 9 6.1 6.1zM5 7.7l6 3v6.5l-6-3zm14 0v6.5l-6 3v-6.5z"/></g>'
+    )
+    bars_icon = (
+        '<g transform="translate(448 15) scale(1.1)"><path class="icon" d="M4 20V10h4v10zm6 0V4h4v16zm6 0v-7h4v7z"/></g>'
+    )
+    if dataset:
+        by_source = dataset.get("cities_by_source", {})
+        total = sum(by_source.values()) or 1
+        items = [
+            (compact(dataset.get("regions")), "regions"),
+            (compact(dataset.get("departments")), "departments"),
+            (compact(dataset.get("communes")), "communes"),
+            (compact(dataset.get("cities")), "postal entries"),
+            (compact(dataset.get("successions")), "code successions"),
+            (f"{round(100 * by_source.get('ban', 0) / total)}%", "BAN points"),
+        ]
+        note = f"INSEE COG {dataset.get('cog_vintage') or '?'}, La Poste {dataset.get('laposte_version') or '?'}."
+    else:
+        items = [("–", label) for label in ("regions", "departments", "communes", "postal entries", "code successions", "BAN points")]
+        note = "Figures appear with the next release."
+
+    peak = max(formats.values(), default=0) or 1
+    rows = []
+    for index, (name, count) in enumerate(sorted(formats.items(), key=lambda item: -item[1])[:4]):
+        y = 66 + index * 36
+        width = max(4, round(250 * count / peak))
+        rows.append(
+            f'<text x="{448}" y="{y + 14}" class="label">{escape(name)}</text>'
+            f'<rect x="{500}" y="{y}" width="{width}" height="18" rx="4" class="bar"/>'
+            f'<text x="{506 + width}" y="{y + 14}" class="label">{compact(count)}</text>'
+        )
+
+    logo = panel(0, "Dataset", box_icon, tiles(0, items), note)
+    downloads = panel(428, "Downloads by format", bars_icon, "".join(rows), "All archives of a format together, from data.gouv.fr.")
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 838 240" width="838" height="240" role="img" aria-label="Dataset content and downloads by format">'
+        f"<style>{STYLE}</style>{logo}{downloads}</svg>\n"
     )
 
 
@@ -223,13 +289,17 @@ def main() -> None:
     hub, history = collect_github(previous)
     logo = fetch(DATA_GOUV_LOGO_URL, binary=True)
 
+    dataset = collect_dataset()
+
     (OUT_DIR / "stats.svg").write_text(stats_svg(data_gouv, hub, logo), encoding="utf-8")
+    (OUT_DIR / "dataset.svg").write_text(dataset_svg(dataset, data_gouv["formats"]), encoding="utf-8")
     stats_file.write_text(
         json.dumps(
             {
                 "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
                 "data_gouv": data_gouv,
                 "github": hub,
+                "dataset": dataset,
                 "history": history,
             },
             indent=2,

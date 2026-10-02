@@ -24,7 +24,7 @@ The dataset files are produced by `make export` and attached to the GitHub relea
 4. Create the GitHub release with the files from `storage/app/exports` as attachments.
 
    ```bash
-   gh release create v4.0.0 --generate-notes storage/app/exports/sql/dataset.sql
+   gh release create v4.0.0 --generate-notes storage/app/exports/sql/dataset.sql storage/app/exports/statistics.json
    ```
 
    The notes are generated from the Conventional Commits between two tags, which is why their format matters.
@@ -37,6 +37,8 @@ The version number follows SemVer. A change to the schema of the files, for exam
 
 ## Statistics cards
 
-The usage card of the README (`stats.svg`) is built every Monday by the `Update stats` workflow and pushed to the `stats` branch. It can also be started by hand from the Actions tab.
+The cards of the README (`stats.svg` and `dataset.svg`) are built every Monday by the `Update stats` workflow and pushed to the `stats` branch. It can also be started by hand from the Actions tab.
 
 GitHub keeps the traffic (views and clones) for 14 days only, so the daily values are accumulated in `stats.json` on that branch. Reading the traffic needs push access: add a repository secret named `STATS_TOKEN` (a token of a maintainer). Without it, the workflow still runs but leaves the views and clones out.
+
+The dataset card reads `statistics.json` (volumes, source of the GPS points, versions of the sources), which `make export` writes and which must be attached to each release. Until a release carries it, the card shows dashes. The downloads by format come from data.gouv.fr.

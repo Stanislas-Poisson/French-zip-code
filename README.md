@@ -90,7 +90,8 @@ For the `addresses.city_id` foreign key to work, the `cities` table must live in
 
 ## Migrating old codes
 
-When a commune merges or changes its code, its old codes keep pointing to it through `commune_successions`. Example: Saint-Florent-des-Bois merged in 2016 into "Rives de l'Yon", which took over the code **85213**, while Chaillé-sous-les-Ormeaux (85043) was absorbed.
+When a commune merges or changes its code, its old codes keep pointing to it through `commune_successions`.  
+Example: Saint-Florent-des-Bois merged in 2016 into "Rives de l'Yon", which took over the code **85213**, while Chaillé-sous-les-Ormeaux (85043) was absorbed.
 
 ```bash
 make resolve CODE=85043 POSTAL_CODE=85310
@@ -131,6 +132,8 @@ The matching `php artisan` commands:
 ## Published files
 
 The exports are attached to the [releases][releases] of the repository and published on [data.gouv.fr][data-gouv]. They contain one file per table, in CSV, JSON and SQL.
+
+![Content of the dataset and downloads by format][img-dataset]
 
 ![Usage statistics of the dataset and the repository][img-stats]
 
@@ -200,3 +203,4 @@ Made by Stanislas Poisson _(Zairakai)_
 [badge-linktree]: https://img.shields.io/badge/Linktree-43e55e?style=flat-square&logo=linktree&logoColor=white
 [badge-support]: https://img.shields.io/badge/Support_the_stream-ff5a5f?style=flat-square&logo=githubsponsors&logoColor=white
 [img-stats]: https://raw.githubusercontent.com/Stanislas-Poisson/French-Postal-Code/stats/stats.svg
+[img-dataset]: https://raw.githubusercontent.com/Stanislas-Poisson/French-Postal-Code/stats/dataset.svg

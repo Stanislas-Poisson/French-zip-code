@@ -6,6 +6,8 @@ namespace Tests\Feature\Export;
 
 use App\Actions\ImportCities;
 use App\Data\Postal\PostalRecord;
+use App\Models\CommuneSuccession;
+use App\Models\Snapshot;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
@@ -116,5 +118,25 @@ final class ExportDatasetTest extends TestCase
             $this->assertFileExists($this->directory . '/csv/' . $name . '.csv');
             $this->assertFileExists($this->directory . '/json/' . $name . '.json');
         }
+    }
+
+    #[Test]
+    public function it_writes_the_figures_of_the_dataset_next_to_the_files(): void
+    {
+        Snapshot::query()->delete();
+        Snapshot::query()->create(['source' => 'insee_cog', 'version' => '2026', 'checksum' => 'a', 'fetched_at' => now(), 'imported_at' => now()]);
+        Snapshot::query()->create(['source' => 'laposte', 'version' => '2026-09', 'checksum' => 'b', 'fetched_at' => now(), 'imported_at' => now()]);
+
+        $this->command('dataset:export', ['--path' => $this->directory])->assertSuccessful();
+
+        /** @var array<string, mixed> $statistics */
+        $statistics = json_decode((string) file_get_contents($this->directory . '/statistics.json'), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame(2, $statistics['cities']);
+        $this->assertGreaterThan(0, $statistics['communes']);
+        $this->assertSame(CommuneSuccession::query()->count(), $statistics['successions']);
+        $this->assertSame(['none' => 2], $statistics['cities_by_source']);
+        $this->assertSame('2026', $statistics['cog_vintage']);
+        $this->assertSame('2026-09', $statistics['laposte_version']);
     }
 }
