@@ -145,10 +145,6 @@ The repository uses [`zairakai/laravel-dev-tools`][dev-tools] (quality tools, gi
 Commits follow Conventional Commits with the ticket number (`type(scope): #123 subject`) and the repository only accepts merge commits on rebased branches.  
 The architecture is described in [`docs/architecture.md`][architecture] and how to publish a version in [`docs/release.md`][release].
 
-## Contributors
-
-![Contributors][img-contributors]
-
 ## Licence
 
 [MIT][license] for the code. The data remain subject to the licences of their sources (see above).
@@ -204,4 +200,3 @@ Made by Stanislas Poisson _(Zairakai)_
 [badge-linktree]: https://img.shields.io/badge/Linktree-43e55e?style=flat-square&logo=linktree&logoColor=white
 [badge-support]: https://img.shields.io/badge/Support_the_stream-ff5a5f?style=flat-square&logo=githubsponsors&logoColor=white
 [img-stats]: https://raw.githubusercontent.com/Stanislas-Poisson/French-Postal-Code/stats/stats.svg
-[img-contributors]: https://raw.githubusercontent.com/Stanislas-Poisson/French-Postal-Code/stats/contributors.svg

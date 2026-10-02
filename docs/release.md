@@ -37,6 +37,6 @@ The version number follows SemVer. A change to the schema of the files, for exam
 
 ## Statistics cards
 
-The cards of the README (`stats.svg`, `contributors.svg`) are built every Monday by the `Update stats` workflow and pushed to the `stats` branch. It can also be started by hand from the Actions tab.
+The usage card of the README (`stats.svg`) is built every Monday by the `Update stats` workflow and pushed to the `stats` branch. It can also be started by hand from the Actions tab.
 
 GitHub keeps the traffic (views and clones) for 14 days only, so the daily values are accumulated in `stats.json` on that branch. Reading the traffic needs push access: add a repository secret named `STATS_TOKEN` (a token of a maintainer). Without it, the workflow still runs but leaves the views and clones out.

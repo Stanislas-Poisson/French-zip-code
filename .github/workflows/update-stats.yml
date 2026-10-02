@@ -44,7 +44,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add stats.json stats.svg contributors.svg
+          git add stats.json stats.svg
           if git diff --staged --quiet; then
             echo "Nothing changed."
           else

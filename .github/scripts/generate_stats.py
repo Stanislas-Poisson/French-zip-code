@@ -2,7 +2,7 @@
 """Builds the statistics cards of the README.
 
 Reads the public data.gouv.fr dataset and the GitHub repository, then writes
-`stats.svg` (usage), `contributors.svg` and `stats.json` (history) in OUT_DIR.
+`stats.svg` (usage) and `stats.json` (history) in OUT_DIR.
 
 GitHub keeps the traffic (views and clones) for 14 days only: the daily values
 are merged into the `stats.json` found in OUT_DIR so the totals keep growing.
@@ -30,7 +30,6 @@ REPO = os.environ.get("GH_REPO") or os.environ.get("GITHUB_REPOSITORY", "Stanisl
 TOKEN = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN", "")
 DATASET = os.environ.get("DATASET", "regions-departements-villes-et-villages-de-france-et-doutre-mer")
 OUT_DIR = Path(os.environ.get("OUT_DIR", "stats"))
-MAX_CONTRIBUTORS = 12
 
 DATA_GOUV_LOGO_URL = "https://www.data.gouv.fr/nuxt_images/favicon.svg"
 GITHUB_ICON = (
@@ -82,14 +81,6 @@ def month_year(iso: str | None) -> str:
     return datetime.fromisoformat(iso.replace("Z", "+00:00")).strftime("%b %Y")
 
 
-def image_mime(content: bytes) -> str:
-    if content.startswith(b"\xff\xd8"):
-        return "image/jpeg"
-    if content.startswith(b"\x89PNG"):
-        return "image/png"
-    return "image/webp" if content[8:12] == b"WEBP" else "application/octet-stream"
-
-
 def data_uri(content: bytes, mime: str) -> str:
     return f"data:{mime};base64,{base64.b64encode(content).decode()}"
 
@@ -138,23 +129,6 @@ def collect_github(previous: dict) -> tuple[dict, dict]:
         "last_commit": commits[0].get("commit", {}).get("committer", {}).get("date"),
     }
     return stats, history
-
-
-def collect_contributors() -> list[dict]:
-    people = github("/contributors?per_page=100") or []
-    humans = [person for person in people if person.get("type") == "User"][:MAX_CONTRIBUTORS]
-    result = []
-    for person in humans:
-        avatar = fetch(person["avatar_url"] + "&s=96", binary=True)
-        result.append(
-            {
-                "login": person["login"],
-                "url": person["html_url"],
-                "commits": person["contributions"],
-                "avatar": data_uri(avatar, image_mime(avatar)) if avatar else None,
-            }
-        )
-    return result
 
 
 STYLE = """
@@ -240,35 +214,6 @@ def stats_svg(data_gouv: dict, hub: dict, logo: bytes | None) -> str:
     )
 
 
-def contributors_svg(people: list[dict]) -> str:
-    columns = 6
-    rows = max(1, -(-len(people) // columns))
-    height = 62 + rows * 104
-    items = []
-    for index, person in enumerate(people):
-        x = 28 + (index % columns) * 134
-        y = 58 + (index // columns) * 104
-        avatar = (
-            f'<clipPath id="a{index}"><circle cx="{x + 32}" cy="{y + 32}" r="32"/></clipPath>'
-            f'<image x="{x}" y="{y}" width="64" height="64" clip-path="url(#a{index})" href="{person["avatar"]}"/>'
-            if person["avatar"]
-            else f'<circle cx="{x + 32}" cy="{y + 32}" r="32" class="tile"/>'
-        )
-        label = escape(person["login"][:16])
-        count = f'{person["commits"]} commit{"s" if person["commits"] != 1 else ""}'
-        items.append(
-            f'<a href="{escape(person["url"])}">{avatar}'
-            f'<text x="{x + 32}" y="{y + 82}" class="label" text-anchor="middle">{label}</text>'
-            f'<text x="{x + 32}" y="{y + 96}" class="note" text-anchor="middle">{count}</text></a>'
-        )
-    return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 838 {height + 2}" width="838" height="{height + 2}" role="img" aria-label="Contributors">'
-        f"<style>{STYLE}</style>"
-        f'<rect x="0" y="0" width="836" height="{height}" rx="10" class="card"/>'
-        f'<text x="20" y="35" class="title">Contributors</text>{"".join(items)}</svg>\n'
-    )
-
-
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     stats_file = OUT_DIR / "stats.json"
@@ -276,11 +221,9 @@ def main() -> None:
 
     data_gouv = collect_data_gouv()
     hub, history = collect_github(previous)
-    people = collect_contributors()
     logo = fetch(DATA_GOUV_LOGO_URL, binary=True)
 
     (OUT_DIR / "stats.svg").write_text(stats_svg(data_gouv, hub, logo), encoding="utf-8")
-    (OUT_DIR / "contributors.svg").write_text(contributors_svg(people), encoding="utf-8")
     stats_file.write_text(
         json.dumps(
             {
