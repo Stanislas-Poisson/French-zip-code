@@ -17,6 +17,20 @@
         "regions"
     ],
     "license": "MIT",
+    "homepage": "https://github.com/Stanislas-Poisson/French-Postal-Code",
+    "authors": [
+        {
+            "name": "Stanislas Poisson",
+            "homepage": "https://github.com/Stanislas-Poisson",
+            "role": "Maintainer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/Stanislas-Poisson/French-Postal-Code/issues",
+        "source": "https://github.com/Stanislas-Poisson/French-Postal-Code",
+        "docs": "https://github.com/Stanislas-Poisson/French-Postal-Code#readme",
+        "security": "https://github.com/Stanislas-Poisson/French-Postal-Code/security/policy"
+    },
     "require": {
         "php": "^8.4",
         "laravel/framework": "^13.17",
