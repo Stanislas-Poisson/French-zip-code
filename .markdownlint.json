@@ -1,0 +1,6 @@
+{
+  "extends": "./config/dev-tools/.markdownlint.json",
+  "MD033": {
+    "allowed_elements": ["details", "summary", "kbd", "br", "div"]
+  }
+}

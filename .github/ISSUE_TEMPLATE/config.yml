@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/Stanislas-Poisson/French-Postal-Code/security/advisories/new
+    about: Please report vulnerabilities privately, not in a public issue.
+  - name: Ask about the dataset on data.gouv.fr
+    url: https://www.data.gouv.fr/datasets/regions-departements-villes-et-villages-de-france-et-doutre-mer
+    about: Questions about the published files and their use can be asked on the dataset page.
