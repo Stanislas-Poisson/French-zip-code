@@ -67,6 +67,10 @@ update: ## Queue an update of the dataset (official files, then the point of eac
 update-sync: ## Run an update in this terminal, without the queue
 	$(COMPOSE) exec php php artisan dataset:update --sync
 
+.PHONY: update-force
+update-force: ## Run a full update in this terminal, importing every file again even if it did not change
+	$(COMPOSE) exec php php artisan dataset:update --sync --force
+
 .PHONY: status
 status: ## Show the state of the dataset and of the last update
 	$(ARTISAN) dataset:status

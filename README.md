@@ -113,11 +113,13 @@ The result follows succession chains (A to B to C), reports a commune that **dis
 Requirements: [Docker][docker] and [Make][make].
 
 ```bash
-make start      # starts PHP 8.4, MySQL 8.4, Redis and Horizon, installs the dependencies, migrates the database
-make update     # updates the dataset (official files, then GPS points), on the queue
-make status     # state of the dataset and of the last update
-make export     # exports to CSV, JSON and SQL in storage/app/exports
-make stop       # stops the project and removes its containers and volumes
+make start         # starts PHP 8.4, MySQL 8.4, Redis and Horizon, installs the dependencies, migrates the database
+make update        # updates the dataset (official files, then GPS points), on the queue
+make update-sync   # same, in this terminal with a progress bar
+make update-force  # same, importing every file again even if it did not change
+make status        # state of the dataset and of the last update
+make export        # exports to CSV, JSON and SQL in storage/app/exports
+make stop          # stops the project and removes its containers and volumes
 ```
 
 `make update` downloads the official files and only re-imports the ones that changed. The GPS points are computed by parallel jobs, one per department, then a check verifies that **every city has a point**, that **every department was processed** and that no job failed. A full update takes about 15 minutes.
