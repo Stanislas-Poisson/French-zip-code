@@ -73,7 +73,7 @@ update-force: ## Run a full update in this terminal, importing every file again 
 
 .PHONY: status
 status: ## Show the state of the dataset and of the last update
-	@$(ARTISAN) dataset:status
+	@$(ARTISAN) dataset:status --ansi
 
 .PHONY: horizon-status
 horizon-status: ## Show whether the Horizon workers are running

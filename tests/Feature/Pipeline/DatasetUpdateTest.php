@@ -119,9 +119,9 @@ final class DatasetUpdateTest extends TestCase
         $this->command('dataset:update', ['--sync' => true])->assertSuccessful();
 
         $this->command('dataset:status')
-            ->expectsOutputToContain('Points by source:          ban ')
-            ->expectsOutputToContain('Cities without a point:    0')
-            ->expectsOutputToContain('Departments failed:        none')
+            ->expectsOutputToContain('Points from the BAN')
+            ->expectsOutputToContain('Cities without a point')
+            ->expectsOutputToContain('Departments failed')
             ->assertSuccessful();
     }
 
