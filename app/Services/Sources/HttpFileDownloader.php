@@ -27,7 +27,7 @@ final class HttpFileDownloader implements FileDownloader
             ->retry(
                 max(1, config()->integer('sources.download.attempts')),
                 fn (int $attempt): int => $this->delay($url, $attempt, $startedAt, $budget),
-                fn (Throwable $throwable): bool => $this->isTemporary($throwable) && (microtime(true) - $startedAt) < $budget,
+                fn (Throwable $throwable): bool => $this->shouldRetry($throwable, $startedAt, $budget),
             )
             ->sink($destination)
             ->get($url)
@@ -71,5 +71,10 @@ final class HttpFileDownloader implements FileDownloader
 
         return $throwable instanceof RequestException
             && (429 === $throwable->response->status() || $throwable->response->status() >= 500);
+    }
+
+    private function shouldRetry(Throwable $throwable, float $startedAt, int $budget): bool
+    {
+        return $this->isTemporary($throwable) && (microtime(true) - $startedAt) < $budget;
     }
 }

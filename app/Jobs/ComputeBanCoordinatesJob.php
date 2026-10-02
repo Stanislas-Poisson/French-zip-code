@@ -46,8 +46,10 @@ final class ComputeBanCoordinatesJob implements ShouldQueue
         Cache::put(ReconcileDataset::cacheKey($this->runId, $this->departmentCode), 'failed', now()->addDay());
     }
 
-    public function handle(ComputeDepartmentCoordinates $computeDepartmentCoordinates, UpdateProgress $updateProgress): void
-    {
+    public function handle(
+        ComputeDepartmentCoordinates $computeDepartmentCoordinates,
+        UpdateProgress $updateProgress,
+    ): void {
         $result = $computeDepartmentCoordinates->execute($this->departmentCode);
 
         Cache::put(ReconcileDataset::cacheKey($this->runId, $this->departmentCode), $result, now()->addDay());

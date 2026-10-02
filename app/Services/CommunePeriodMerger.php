@@ -36,21 +36,32 @@ final class CommunePeriodMerger
     }
 
     /**
+     * Extends the open period with the record when it follows it without a change of entity, otherwise null.
+     *
      * @param array{code: string, kind: CommuneKind, name: string, from: string, to: string|null}|null $open
      * @param array<string, true>                                                                      $breaks
      *
-     * @phpstan-assert-if-true array{code: string, kind: CommuneKind, name: string, from: string, to: string|null} $open
+     * @return array{code: string, kind: CommuneKind, name: string, from: string, to: string|null}|null
      */
-    private function continues(
+    private function extend(
         ?array $open,
         HistoricCommuneRecord $historicCommuneRecord,
         string $from,
         array $breaks,
-    ): bool {
-        return null !== $open
-            && $open['kind'] === $historicCommuneRecord->kind
-            && $open['to']   === $from
-            && ! isset($breaks[$from]);
+    ): ?array {
+        if (null === $open || $open['kind'] !== $historicCommuneRecord->kind) {
+            return null;
+        }
+
+        if ($open['to'] !== $from || isset($breaks[$from])) {
+            return null;
+        }
+
+        return [
+            ...$open,
+            'name' => $historicCommuneRecord->name,
+            'to'   => $historicCommuneRecord->validTo?->toDateString(),
+        ];
     }
 
     /**
@@ -91,9 +102,10 @@ final class CommunePeriodMerger
             $from = $record->validFrom->toDateString();
             $to   = $record->validTo?->toDateString();
 
-            if ($this->continues($open, $record, $from, $breaks)) {
-                $open['to']   = $to;
-                $open['name'] = $record->name;
+            $extended = $this->extend($open, $record, $from, $breaks);
+
+            if (null !== $extended) {
+                $open = $extended;
 
                 continue;
             }

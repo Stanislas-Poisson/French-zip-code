@@ -24,10 +24,10 @@ final class ExportDatasetCommand extends Command
             $this->line(sprintf('%-22s %d rows', $name, $count));
         }
 
-        File::put(
-            $directory . '/statistics.json',
-            json_encode($buildDatasetStatistics->execute()->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n",
-        );
+        $statistics = $buildDatasetStatistics->execute()->toArray();
+        $flags      = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR;
+
+        File::put($directory . '/statistics.json', json_encode($statistics, $flags) . "\n");
 
         $this->info('Exported to ' . $directory . ' (csv, json and statistics.json).');
 

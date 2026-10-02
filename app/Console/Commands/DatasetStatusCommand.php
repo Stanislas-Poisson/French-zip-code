@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Data\Sources\ReconciliationReport;
 use App\Models\City;
 use App\Models\Snapshot;
 use App\Services\DatasetUpdater;
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 
 final class DatasetStatusCommand extends Command
@@ -24,15 +26,12 @@ final class DatasetStatusCommand extends Command
 
     public function handle(): int
     {
-        $this->components->twoColumnDetail('<options=bold>Current cities</>', $this->number(City::query()->current()->count()));
+        $this->row('<options=bold>Current cities</>', $this->number(City::query()->current()->count()));
 
         $this->heading('Sources');
 
         foreach (Snapshot::query()->orderByDesc('id')->limit(5)->get() as $snapshot) {
-            $this->components->twoColumnDetail(
-                $snapshot->source . ' ' . $snapshot->version,
-                $snapshot->complete ? '<fg=green;options=bold>complete</>' : '<fg=red;options=bold>incomplete</>',
-            );
+            $this->row($snapshot->source . ' ' . $snapshot->version, $this->state($snapshot->complete));
         }
 
         $last = Cache::get(DatasetUpdater::REPORT_CACHE_KEY);
@@ -44,7 +43,7 @@ final class DatasetStatusCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->printReport($last);
+        $this->printReport(Arr::string($last, 'runId'), ReconciliationReport::fromArray(Arr::array($last, 'report')));
 
         return self::SUCCESS;
     }
@@ -55,59 +54,69 @@ final class DatasetStatusCommand extends Command
         $this->line('  <fg=yellow;options=bold>' . $title . '</>');
     }
 
-    private function list(mixed $codes): string
+    /**
+     * @param list<string> $codes
+     */
+    private function list(array $codes): string
     {
-        return is_array($codes) && [] !== $codes
-            ? '<fg=red;options=bold>' . implode(', ', array_map($this->text(...), $codes)) . '</>'
-            : '<fg=green>none</>';
+        return [] === $codes ? '<fg=green>none</>' : '<fg=red;options=bold>' . implode(', ', $codes) . '</>';
     }
 
-    private function number(mixed $value): string
+    private function number(int $value): string
     {
-        return is_numeric($value) ? number_format((int) $value, 0, '.', ' ') : '0';
+        return number_format($value, 0, '.', ' ');
+    }
+
+    private function printReport(string $runId, ReconciliationReport $reconciliationReport): void
+    {
+        $this->heading('Last update ' . $runId);
+        $status = $reconciliationReport->isComplete()
+            ? '<fg=green;options=bold>COMPLETE</>'
+            : '<fg=red;options=bold>INCOMPLETE</>';
+
+        $this->row('Status', $status);
+
+        $this->printSources($reconciliationReport->citiesBySource);
+
+        $this->row('Cities without a point', $this->problem($reconciliationReport->citiesWithoutCoordinates));
+        $withoutCity = $this->number($reconciliationReport->communesWithoutCity);
+
+        $this->row('Communes without a city', '<fg=gray>' . $withoutCity . '</>');
+        $this->row('Departments not processed', $this->list($reconciliationReport->departmentsNotRun));
+        $this->row('Departments failed', $this->list($reconciliationReport->departmentsFailed));
+        $this->row('Failed jobs', $this->problem($reconciliationReport->failedJobs));
     }
 
     /**
-     * @param array<mixed> $last
+     * @param array<string, int> $bySource
      */
-    private function printReport(array $last): void
+    private function printSources(array $bySource): void
     {
-        $report   = is_array($last['report'] ?? null) ? $last['report'] : [];
-        $bySource = is_array($report['citiesBySource'] ?? null) ? $report['citiesBySource'] : [];
-        $total    = array_sum(array_map(static fn (mixed $count): int => is_numeric($count) ? (int) $count : 0, $bySource));
-
-        $this->heading('Last update ' . $this->text($last['runId'] ?? ''));
-        $this->components->twoColumnDetail(
-            'Status',
-            true === ($last['complete'] ?? false) ? '<fg=green;options=bold>COMPLETE</>' : '<fg=red;options=bold>INCOMPLETE</>',
-        );
+        $total = max(1, array_sum($bySource));
 
         foreach ($bySource as $source => $count) {
-            $this->components->twoColumnDetail(
+            $this->row(
                 self::SOURCE_LABELS[$source] ?? 'Points from ' . $source,
-                sprintf('%s <fg=gray>(%s %%)</>', $this->number($count), number_format(0 < $total && is_numeric($count) ? 100 * (int) $count / $total : 0, 1)),
+                sprintf('%s <fg=gray>(%s %%)</>', $this->number($count), number_format(100 * $count / $total, 1)),
             );
         }
-
-        $this->components->twoColumnDetail('Cities without a point', $this->problem($report['citiesWithoutCoordinates'] ?? 0));
-        $this->components->twoColumnDetail('Communes without a city', '<fg=gray>' . $this->number($report['communesWithoutCity'] ?? 0) . '</>');
-        $this->components->twoColumnDetail('Departments not processed', $this->list($report['departmentsNotRun'] ?? []));
-        $this->components->twoColumnDetail('Departments failed', $this->list($report['departmentsFailed'] ?? []));
-        $this->components->twoColumnDetail('Failed jobs', $this->problem($report['failedJobs'] ?? 0));
     }
 
     /**
      * A figure that should be zero: green when it is, red otherwise.
      */
-    private function problem(mixed $value): string
+    private function problem(int $value): string
     {
-        $number = is_numeric($value) ? (int) $value : 0;
-
-        return (0 < $number ? '<fg=red;options=bold>' : '<fg=green>') . $this->number($number) . '</>';
+        return (0 < $value ? '<fg=red;options=bold>' : '<fg=green>') . $this->number($value) . '</>';
     }
 
-    private function text(mixed $value): string
+    private function row(string $label, string $value): void
     {
-        return is_scalar($value) ? (string) $value : '';
+        $this->components->twoColumnDetail($label, $value);
+    }
+
+    private function state(bool $complete, string $word = 'complete'): string
+    {
+        return $complete ? '<fg=green;options=bold>' . $word . '</>' : '<fg=red;options=bold>in' . $word . '</>';
     }
 }

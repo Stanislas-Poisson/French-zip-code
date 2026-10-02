@@ -87,7 +87,10 @@ final readonly class DatasetUpdater
             return;
         }
 
-        $this->updateProgress->start(sprintf('Computing the GPS point of each postal code (%d BAN files)', count($jobs)), count($jobs));
+        $this->updateProgress->start(
+            sprintf('Computing the GPS point of each postal code (%d BAN files)', count($jobs)),
+            count($jobs),
+        );
 
         Bus::batch($jobs)
             ->name('ban-coordinates:' . $runId)

@@ -33,14 +33,38 @@ final class UpdateDatasetCommand extends Command
             return self::SUCCESS;
         }
 
+        return $this->runHere($datasetUpdater, $updateProgress, $runId, $force, $withCoordinates);
+    }
+
+    private function isComplete(string $runId): bool
+    {
+        $last = Cache::get(DatasetUpdater::REPORT_CACHE_KEY);
+
+        return is_array($last) && $runId === ($last['runId'] ?? null) && true === ($last['complete'] ?? false);
+    }
+
+    /**
+     * In this mode everything ran in this process, so what the updater calls "dispatched" is over.
+     */
+    private function label(string $status): string
+    {
+        return 'dispatched' === $status ? 'completed' : str_replace('_', ' ', $status);
+    }
+
+    private function runHere(
+        DatasetUpdater $datasetUpdater,
+        UpdateProgress $updateProgress,
+        string $runId,
+        bool $force,
+        bool $withCoordinates,
+    ): int {
         config(['queue.default' => 'sync']);
         $updateProgress->attach($this->output);
 
         $result = $datasetUpdater->run($runId, $force, $withCoordinates);
         $updateProgress->finish();
 
-        // In this mode everything ran in this process, so what the updater calls "dispatched" is over.
-        $this->info(sprintf('Update %s %s.', $runId, 'dispatched' === $result['status'] ? 'completed' : str_replace('_', ' ', $result['status'])));
+        $this->info(sprintf('Update %s %s.', $runId, $this->label($result['status'])));
         $this->call('dataset:status');
 
         if ($withCoordinates && 'up_to_date' !== $result['status'] && ! $this->isComplete($runId)) {
@@ -50,12 +74,5 @@ final class UpdateDatasetCommand extends Command
         }
 
         return self::SUCCESS;
-    }
-
-    private function isComplete(string $runId): bool
-    {
-        $last = Cache::get(DatasetUpdater::REPORT_CACHE_KEY);
-
-        return is_array($last) && $runId === ($last['runId'] ?? null) && true === ($last['complete'] ?? false);
     }
 }
