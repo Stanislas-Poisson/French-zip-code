@@ -4,5 +4,5 @@ contact_links:
     url: https://github.com/Stanislas-Poisson/French-Postal-Code/security/advisories/new
     about: Please report vulnerabilities privately, not in a public issue.
   - name: Ask about the dataset on data.gouv.fr
-    url: https://www.data.gouv.fr/datasets/regions-departements-villes-et-villages-de-france-et-doutre-mer
+    url: https://www.data.gouv.fr/datasets/regions-departements-communes-et-codes-postaux-de-france-avec-un-point-gps-par-code-postal-et-lhistorique-des-changements
     about: Questions about the published files and their use can be asked on the dataset page.

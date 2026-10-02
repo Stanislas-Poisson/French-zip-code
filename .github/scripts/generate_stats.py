@@ -10,7 +10,7 @@ are merged into the `stats.json` found in OUT_DIR so the totals keep growing.
 Environment:
     GH_REPO     owner/name of the repository (default: GITHUB_REPOSITORY)
     GH_TOKEN    token with push access, needed for the traffic endpoints
-    DATASET     data.gouv.fr dataset slug
+    DATASET     data.gouv.fr dataset identifier (the slug changes with the title, the identifier never does)
     OUT_DIR     directory holding the previous stats.json and the output
 """
 
@@ -29,7 +29,7 @@ from pathlib import Path
 
 REPO = os.environ.get("GH_REPO") or os.environ.get("GITHUB_REPOSITORY", "Stanislas-Poisson/French-Postal-Code")
 TOKEN = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN", "")
-DATASET = os.environ.get("DATASET", "regions-departements-villes-et-villages-de-france-et-doutre-mer")
+DATASET = os.environ.get("DATASET", "5a2d54f288ee382771f2cf4f")
 OUT_DIR = Path(os.environ.get("OUT_DIR", "stats"))
 
 DATA_GOUV_LOGO_URL = "https://www.data.gouv.fr/nuxt_images/favicon.svg"
