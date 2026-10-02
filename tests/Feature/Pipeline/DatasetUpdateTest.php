@@ -44,7 +44,7 @@ final class DatasetUpdateTest extends TestCase
     #[Test]
     public function it_can_skip_the_computation_of_the_coordinates(): void
     {
-        $this->command('zipcode:update', ['--sync' => true, '--skip-coordinates' => true])
+        $this->command('dataset:update', ['--sync' => true, '--skip-coordinates' => true])
             ->expectsOutputToContain('imported')
             ->assertSuccessful();
 
@@ -54,10 +54,10 @@ final class DatasetUpdateTest extends TestCase
     #[Test]
     public function it_does_nothing_when_the_sources_did_not_change(): void
     {
-        $this->command('zipcode:update', ['--sync' => true])->assertSuccessful();
+        $this->command('dataset:update', ['--sync' => true])->assertSuccessful();
         $snapshots = Snapshot::query()->count();
 
-        $this->command('zipcode:update', ['--sync' => true])
+        $this->command('dataset:update', ['--sync' => true])
             ->expectsOutputToContain('up_to_date')
             ->assertSuccessful();
 
@@ -67,7 +67,7 @@ final class DatasetUpdateTest extends TestCase
     #[Test]
     public function it_gives_the_cities_without_ban_address_the_centre_of_their_commune(): void
     {
-        $this->command('zipcode:update', ['--sync' => true])->assertSuccessful();
+        $this->command('dataset:update', ['--sync' => true])->assertSuccessful();
 
         $city = City::query()->whereRelation('commune', 'insee_code', '85213')->sole();
 
@@ -78,9 +78,9 @@ final class DatasetUpdateTest extends TestCase
     #[Test]
     public function it_imports_again_when_forced(): void
     {
-        $this->command('zipcode:update', ['--sync' => true])->assertSuccessful();
+        $this->command('dataset:update', ['--sync' => true])->assertSuccessful();
 
-        $this->command('zipcode:update', ['--sync' => true, '--force' => true])
+        $this->command('dataset:update', ['--sync' => true, '--force' => true])
             ->expectsOutputToContain('dispatched')
             ->assertSuccessful();
 
@@ -90,7 +90,7 @@ final class DatasetUpdateTest extends TestCase
     #[Test]
     public function it_marks_the_snapshots_complete_and_stores_the_report(): void
     {
-        $this->command('zipcode:update', ['--sync' => true])->assertSuccessful();
+        $this->command('dataset:update', ['--sync' => true])->assertSuccessful();
 
         $this->assertSame(0, Snapshot::query()->where('complete', false)->count());
         $this->assertGreaterThanOrEqual(2, Snapshot::query()->where('complete', true)->count());
@@ -114,7 +114,7 @@ final class DatasetUpdateTest extends TestCase
     #[Test]
     public function it_runs_the_whole_update_and_gives_each_zip_code_its_own_point(): void
     {
-        $this->command('zipcode:update', ['--sync' => true])->assertSuccessful();
+        $this->command('dataset:update', ['--sync' => true])->assertSuccessful();
 
         $this->assertSame(1, Commune::query()->current()->where('insee_code', '37261')->count());
 
@@ -127,9 +127,9 @@ final class DatasetUpdateTest extends TestCase
     #[Test]
     public function it_shows_the_status_of_the_last_update(): void
     {
-        $this->command('zipcode:update', ['--sync' => true])->assertSuccessful();
+        $this->command('dataset:update', ['--sync' => true])->assertSuccessful();
 
-        $this->command('zipcode:status')
+        $this->command('dataset:status')
             ->expectsOutputToContain('Current cities')
             ->assertSuccessful();
     }

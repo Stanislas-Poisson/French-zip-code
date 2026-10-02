@@ -8,7 +8,7 @@ use App\Data\Ban\BanAddressPoint;
 use App\Data\Ban\CityPoint;
 
 /**
- * Computes the GPS point of each commune and zip code pair as the median of the latitudes and of the longitudes
+ * Computes the GPS point of each commune and postal code pair as the median of the latitudes and of the longitudes
  * of its addresses. The median is not moved by a badly placed address, unlike the mean.
  */
 final class CityPointCalculator

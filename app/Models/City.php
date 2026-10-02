@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * A postal entry: a commune and one of its zip codes, with its own GPS point.
+ * A postal entry: a commune and one of its postal codes, with its own GPS point.
  * It is the target of the foreign keys of the addresses of an application.
  *
  * @property int                   $id

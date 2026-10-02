@@ -38,7 +38,7 @@ final class ResolveCityTest extends TestCase
     #[Test]
     public function it_fails_for_a_code_that_disappeared(): void
     {
-        $this->command('zipcode:resolve', ['code' => '00000'])
+        $this->command('dataset:resolve', ['code' => '00000'])
             ->expectsOutputToContain('has disappeared')
             ->assertFailed();
     }
@@ -92,7 +92,7 @@ final class ResolveCityTest extends TestCase
     {
         $this->city('85213', '85310');
 
-        $this->command('zipcode:resolve', ['code' => '85043', '--zip' => '85310'])
+        $this->command('dataset:resolve', ['code' => '85043', '--postal-code' => '85310'])
             ->expectsOutputToContain('absorbed: 85043 -> 85213')
             ->expectsOutputToContain('Current communes: 85213')
             ->assertSuccessful();
@@ -115,8 +115,8 @@ final class ResolveCityTest extends TestCase
     {
         $this->city('85213', '85310');
 
-        $this->command('zipcode:resolve', ['code' => '85043', '--zip' => '99999'])
-            ->expectsOutputToContain('The zip code 99999 is not used any more')
+        $this->command('dataset:resolve', ['code' => '85043', '--postal-code' => '99999'])
+            ->expectsOutputToContain('The postal code 99999 is not used any more')
             ->assertSuccessful();
     }
 

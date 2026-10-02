@@ -18,7 +18,7 @@ final readonly class ImportCities
     public function __construct(private RecordReferenceChange $recordReferenceChange) {}
 
     /**
-     * Brings the cities (commune + zip code) in line with the La Poste file.
+     * Brings the cities (commune + postal code) in line with the La Poste file.
      * A city is never deleted: when its pair disappears, its validity is closed.
      * The first import records no change, as there is nothing to compare with.
      *

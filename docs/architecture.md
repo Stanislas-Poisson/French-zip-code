@@ -172,7 +172,7 @@ In `Exports/`:
 - Changes per vintage: `changes/{YYYY}` (created, deleted, renamed, merged, replaced).
 - Postal code changes: `city_changes` (CSV, JSON), with the old and the new `City` identifier.
 
-A `zipcode:resolve {code} {--date=}` command lets you test the resolution. The README describes how a user migrates their data with these files.
+A `dataset:resolve {code} {--date=}` command lets you test the resolution. The README describes how a user migrates their data with these files.
 
 ### D10 – Code layout
 
@@ -293,7 +293,7 @@ Recommendation:
 4. Clients and parsers of the three sources, with tests on small test datasets.
 5. COG import and construction of the events and successions.
 6. La Poste and geo.api import, computation of the per postal code coordinates (BAN per department, Nominatim fallback, commune centre fallback), completeness reconciliation, computation of `reference_changes`.
-7. Resolution and `zipcode:resolve` command.
+7. Resolution and `dataset:resolve` command.
 8. Exports, README and migration documentation for users.
 9. First full real import, comparison with the published dataset, then update of `Exports/`.
 
@@ -319,11 +319,11 @@ Recommendation:
 Everything described above is implemented, with the following clarifications and differences.
 
 - **Class names**: the models are `Region`, `Department`, `Commune`, `City`, `Snapshot`, `CommuneEvent`, `CommuneSuccession` and `ReferenceChange`.
-- **Commands**: `zipcode:update` (`--sync`, `--force`, `--skip-coordinates`), `zipcode:status`, `zipcode:resolve` and `zipcode:export`.
+- **Commands**: `dataset:update` (`--sync`, `--force`, `--skip-coordinates`), `dataset:status`, `dataset:resolve` and `dataset:export`.
 - **Pipeline**: `FetchSources` → `ImportOfficialSources` (COG, La Poste, geo.api centres, linking of replaced cities) → BAN batch (one job per department) → Nominatim batch (one job per city without a point) → `ReconcileDataset`. The long steps go through the Redis queue, supervised by Horizon (a `horizon` service in `docker-compose.yml`).
 - **Nominatim rate limiting**: a job waits for its turn (`ThrottleNominatim` middleware) instead of being released. The `nominatim` queue has a single process, so waiting bothers nobody, and the same code works with the `sync` queue.
 - **Horizon dashboard closed**: the project has no web interface. Horizon is used to supervise the workers (`make horizon-status`, `make horizon-logs`).
-- **Exports**: CSV and JSON streamed by `zipcode:export`, SQL dump by `mysqldump` (`make export`). The files are written to `storage/app/exports` and are no longer committed.
+- **Exports**: CSV and JSON streamed by `dataset:export`, SQL dump by `mysqldump` (`make export`). The files are written to `storage/app/exports` and are no longer committed.
 - **Communes without a postal entry**: Paris, Lyon and Marseille (their arrondissements carry the postal codes) and six territories without a postal code. This is flagged by the reconciliation report without blocking the publication.
 - **Overseas communes (COM)**: they have no history before the first import, because the INSEE history file only covers metropolitan France and the DROM. They are imported with a validity starting in 1943.
 - **Former departments**: a closed commune whose department no longer exists in the current COG is imported without a department (empty `department_id`).

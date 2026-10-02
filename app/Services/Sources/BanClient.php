@@ -14,7 +14,7 @@ use Illuminate\Http\Client\RequestException;
 final readonly class BanClient
 {
     /**
-     * A file smaller than this is an empty department (the BAN publishes a 20 bytes file).
+     * A file smaller than this is an empty department (the BAN publishes a 20-byte file).
      */
     private const int MINIMUM_SIZE = 100;
 

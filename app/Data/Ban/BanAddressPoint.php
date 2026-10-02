@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Ban;
 
 /**
- * The position of one address of the BAN, with the commune and the zip code it belongs to.
+ * The position of one address of the BAN, with the commune and the postal code it belongs to.
  */
 final readonly class BanAddressPoint
 {

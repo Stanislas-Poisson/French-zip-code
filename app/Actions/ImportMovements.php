@@ -13,7 +13,7 @@ final class ImportMovements
     private const int CHUNK_SIZE = 1000;
 
     /**
-     * Replaces the events with the ones of the file: the INSEE movements file is cumulative since 1943.
+     * Replaces the events with those of the file: the INSEE movements file is cumulative since 1943.
      *
      * @param iterable<CommuneMovementRecord> $movements
      *

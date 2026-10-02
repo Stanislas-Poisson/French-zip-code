@@ -15,7 +15,7 @@ final readonly class GeocodeCityWithNominatim
     public function __construct(private NominatimClient $nominatimClient) {}
 
     /**
-     * Fallback for a city that has no address in the BAN: asks Nominatim for the point of its zip code.
+     * Fallback for a city that has no address in the BAN: asks Nominatim for the point of its postal code.
      * A point too far from the centre of the commune is a wrong match and is ignored.
      *
      * @return bool whether the point of the city has been updated

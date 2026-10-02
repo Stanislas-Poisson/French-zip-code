@@ -15,7 +15,7 @@ enum SuccessionKind: string
     case Absorbed = 'absorbed';
 
     /**
-     * The code is kept by the merged entity which has a different meaning.
+     * The code is kept by the merged entity, but now designates a different commune.
      */
     case CodeReused = 'code_reused';
 
@@ -35,7 +35,7 @@ enum SuccessionKind: string
     case Replaced = 'replaced';
 
     /**
-     * Commune split into several ones.
+     * Commune split into several communes.
      */
     case Split = 'split';
 }

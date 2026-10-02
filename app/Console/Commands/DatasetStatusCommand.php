@@ -14,7 +14,7 @@ final class DatasetStatusCommand extends Command
 {
     protected $description = 'Show the state of the dataset and of the last update';
 
-    protected $signature = 'zipcode:status';
+    protected $signature = 'dataset:status';
 
     public function handle(): int
     {

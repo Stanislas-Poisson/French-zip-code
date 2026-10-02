@@ -13,8 +13,8 @@ final readonly class ResolveCity
     public function __construct(private ResolveCommuneCode $resolveCommuneCode) {}
 
     /**
-     * Finds the current cities that correspond to an old commune code and zip code: the same zip code in the
-     * communes that took over the old one or, when the zip code is not used any more, every zip code of those
+     * Finds the current cities that correspond to an old commune code and postal code: the same postal code in the
+     * communes that took over the old one or, when the postal code is not used any more, every postal code of those
      * communes.
      */
     public function execute(

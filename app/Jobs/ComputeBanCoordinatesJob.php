@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
- * Computes the point of every zip code of one department from its BAN file.
+ * Computes the point of every postal code of one department from its BAN file.
  * The job is idempotent: it can be replayed after a failure.
  */
 final class ComputeBanCoordinatesJob implements ShouldQueue

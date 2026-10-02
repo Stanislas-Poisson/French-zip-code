@@ -20,7 +20,7 @@ final class QueuedUpdateTest extends TestCase
     {
         Queue::fake();
 
-        $this->command('zipcode:update', ['--force' => true, '--skip-coordinates' => true])
+        $this->command('dataset:update', ['--force' => true, '--skip-coordinates' => true])
             ->expectsOutputToContain('queued')
             ->assertSuccessful();
 
@@ -35,7 +35,7 @@ final class QueuedUpdateTest extends TestCase
     {
         Cache::flush();
 
-        $this->command('zipcode:status')
+        $this->command('dataset:status')
             ->expectsOutputToContain('No update has been reconciled yet.')
             ->assertSuccessful();
     }

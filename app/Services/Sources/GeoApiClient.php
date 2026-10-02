@@ -8,7 +8,7 @@ use App\Data\Postal\GeoCommuneRecord;
 use Illuminate\Support\Facades\Http;
 
 /**
- * geo.api.gouv.fr returns every commune in one request, with its centre and its zip codes.
+ * geo.api.gouv.fr returns every commune in one request, with its centre and its postal codes.
  */
 final class GeoApiClient
 {

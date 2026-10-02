@@ -11,7 +11,7 @@ final class ExportDatasetCommand extends Command
 {
     protected $description = 'Export the dataset and its history to CSV and JSON files';
 
-    protected $signature = 'zipcode:export {--path= : Directory of the export (storage/app/exports by default)}';
+    protected $signature = 'dataset:export {--path= : Directory of the export (storage/app/exports by default)}';
 
     public function handle(DatasetExporter $datasetExporter): int
     {

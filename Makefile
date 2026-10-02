@@ -60,16 +60,16 @@ db-reset: ## Drop all the tables and migrate again
 ## —— 🗺️ Dataset ——
 
 .PHONY: update
-update: ## Queue an update of the dataset (official files, then the point of each zip code)
-	$(ARTISAN) zipcode:update
+update: ## Queue an update of the dataset (official files, then the point of each postal code)
+	$(ARTISAN) dataset:update
 
 .PHONY: update-sync
 update-sync: ## Run an update in this terminal, without the queue
-	$(COMPOSE) exec php php artisan zipcode:update --sync
+	$(COMPOSE) exec php php artisan dataset:update --sync
 
 .PHONY: status
 status: ## Show the state of the dataset and of the last update
-	$(ARTISAN) zipcode:status
+	$(ARTISAN) dataset:status
 
 .PHONY: horizon-status
 horizon-status: ## Show whether the Horizon workers are running
@@ -83,11 +83,11 @@ EXPORT_DIR ?= storage/app/exports
 
 .PHONY: export
 export: ## Export the dataset and its history to CSV, JSON and SQL files (EXPORT_DIR, storage/app/exports by default)
-	$(ARTISAN) zipcode:export --path=/var/www/html/$(EXPORT_DIR)
+	$(ARTISAN) dataset:export --path=/var/www/html/$(EXPORT_DIR)
 	@mkdir -p $(EXPORT_DIR)/sql
 	$(COMPOSE) exec -T mysql mysqldump -uroot -proot --no-tablespaces --skip-comments --skip-lock-tables frenchzipcode regions departments communes cities commune_successions reference_changes > $(EXPORT_DIR)/sql/dataset.sql
 	@echo "SQL dump written to $(EXPORT_DIR)/sql/dataset.sql"
 
 .PHONY: resolve
-resolve: ## Find where an old commune code points to today (CODE=37261 ZIP=37000 DATE=2015-01-01)
-	$(ARTISAN) zipcode:resolve $(CODE) $(if $(ZIP),--zip=$(ZIP)) $(if $(DATE),--date=$(DATE))
+resolve: ## Find where an old commune code points to today (CODE=37261 POSTAL_CODE=37000 DATE=2015-01-01)
+	$(ARTISAN) dataset:resolve $(CODE) $(if $(POSTAL_CODE),--postal-code=$(POSTAL_CODE)) $(if $(DATE),--date=$(DATE))

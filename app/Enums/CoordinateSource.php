@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * Where the GPS point of a city (commune + zip code) comes from.
+ * Where the GPS point of a city (commune + postal code) comes from.
  */
 enum CoordinateSource: string
 {
@@ -20,7 +20,7 @@ enum CoordinateSource: string
     case CommuneCentre = 'commune_centre';
 
     /**
-     * Nominatim search on the zip code and the commune name.
+     * Nominatim search on the postal code and the commune name.
      */
     case Nominatim = 'nominatim';
 }

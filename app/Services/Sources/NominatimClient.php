@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Http;
 final class NominatimClient
 {
     /**
-     * Looks for the point of a zip code in a commune.
+     * Looks for the point of a postal code in a commune.
      *
      * @return array{latitude: float, longitude: float}|null
      */

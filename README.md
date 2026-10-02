@@ -99,7 +99,7 @@ For the `addresses.city_id` foreign key to work, the `cities` table must live in
 When a commune merges or changes its code, its old codes keep pointing to it through `commune_successions`. Example: Saint-Florent-des-Bois merged in 2016 into "Rives de l'Yon", which took over the code **85213**, while Chaillé-sous-les-Ormeaux (85043) was absorbed.
 
 ```bash
-make resolve CODE=85043 ZIP=85310
+make resolve CODE=85043 POSTAL_CODE=85310
 # 2016-01-01  absorbed: 85043 -> 85213
 # 2016-01-01  code_reused: 85213 -> 85213
 # Current communes: 85213
@@ -129,10 +129,10 @@ make stop       # stops the project and removes its containers and volumes
 
 The matching `php artisan` commands:
 
-- `zipcode:update` _(`--sync`, `--force`, `--skip-coordinates`)_
-- `zipcode:status`
-- `zipcode:resolve`
-- `zipcode:export`.
+- `dataset:update` _(`--sync`, `--force`, `--skip-coordinates`)_
+- `dataset:status`
+- `dataset:resolve`
+- `dataset:export`.
 
 ## Published files
 

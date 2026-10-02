@@ -13,10 +13,10 @@ final class UpdateDatasetCommand extends Command
 {
     protected $description = 'Download the official files and update the dataset';
 
-    protected $signature = 'zipcode:update
+    protected $signature = 'dataset:update
         {--sync : Run everything in this process instead of the queue}
         {--force : Import again the files that did not change}
-        {--skip-coordinates : Do not compute the point of each zip code}';
+        {--skip-coordinates : Do not compute the point of each postal code}';
 
     public function handle(DatasetUpdater $datasetUpdater): int
     {

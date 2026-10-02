@@ -21,7 +21,7 @@ return [
 
     'ban' => [
         'base_url' => env('BAN_BASE_URL', 'https://adresse.data.gouv.fr/data/ban/adresses/latest/csv'),
-        // A zip code with fewer addresses than this keeps its fallback point.
+        // A postal code with fewer addresses than this keeps its fallback point.
         'minimum_addresses' => 1,
     ],
 

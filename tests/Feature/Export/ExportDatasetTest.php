@@ -44,7 +44,7 @@ final class ExportDatasetTest extends TestCase
     #[Test]
     public function it_exports_a_closed_commune_with_its_validity(): void
     {
-        $this->command('zipcode:export', ['--path' => $this->directory])->assertSuccessful();
+        $this->command('dataset:export', ['--path' => $this->directory])->assertSuccessful();
 
         $reader = Reader::from($this->directory . '/csv/communes.csv', 'r');
         $reader->setHeaderOffset(0);
@@ -61,7 +61,7 @@ final class ExportDatasetTest extends TestCase
     #[Test]
     public function it_exports_a_valid_json_that_matches_the_csv(): void
     {
-        $this->command('zipcode:export', ['--path' => $this->directory])->assertSuccessful();
+        $this->command('dataset:export', ['--path' => $this->directory])->assertSuccessful();
 
         $decoded = json_decode((string) file_get_contents($this->directory . '/json/cities.json'), true, flags: JSON_THROW_ON_ERROR);
 
@@ -73,7 +73,7 @@ final class ExportDatasetTest extends TestCase
     #[Test]
     public function it_exports_the_cities_with_the_code_of_their_commune(): void
     {
-        $this->command('zipcode:export', ['--path' => $this->directory])->assertSuccessful();
+        $this->command('dataset:export', ['--path' => $this->directory])->assertSuccessful();
 
         $reader = Reader::from($this->directory . '/csv/cities.csv', 'r');
         $reader->setHeaderOffset(0);
@@ -91,7 +91,7 @@ final class ExportDatasetTest extends TestCase
     #[Test]
     public function it_exports_the_history_that_lets_a_user_migrate_an_old_code(): void
     {
-        $this->command('zipcode:export', ['--path' => $this->directory])->assertSuccessful();
+        $this->command('dataset:export', ['--path' => $this->directory])->assertSuccessful();
 
         $reader = Reader::from($this->directory . '/csv/commune_successions.csv', 'r');
         $reader->setHeaderOffset(0);
@@ -110,7 +110,7 @@ final class ExportDatasetTest extends TestCase
     #[Test]
     public function it_writes_a_csv_and_a_json_file_for_each_dataset(): void
     {
-        $this->command('zipcode:export', ['--path' => $this->directory])->assertSuccessful();
+        $this->command('dataset:export', ['--path' => $this->directory])->assertSuccessful();
 
         foreach (['regions', 'departments', 'communes', 'cities', 'commune_successions', 'reference_changes'] as $name) {
             $this->assertFileExists($this->directory . '/csv/' . $name . '.csv');

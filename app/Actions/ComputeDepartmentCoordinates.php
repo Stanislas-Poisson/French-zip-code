@@ -36,7 +36,7 @@ final readonly class ComputeDepartmentCoordinates
     }
 
     /**
-     * Downloads the BAN file of a department, computes the point of each of its zip codes and stores it.
+     * Downloads the BAN file of a department, computes the point of each of its postal codes and stores it.
      *
      * @return array{points: int, updated: int, unmatched: int, skipped: bool}
      */

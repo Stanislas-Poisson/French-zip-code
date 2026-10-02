@@ -16,7 +16,7 @@ final readonly class LinkReplacedCities
     /**
      * Links each city whose validity was closed to the city that replaces it, so that the foreign keys of an
      * application can be moved to the new row. A city is linked only when the target is unambiguous: the same
-     * zip code in the commune that took over the old one.
+     * postal code in the commune that took over the old one.
      *
      * @return int number of cities linked
      */

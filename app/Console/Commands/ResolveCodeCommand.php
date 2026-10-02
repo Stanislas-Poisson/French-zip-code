@@ -12,18 +12,18 @@ use Illuminate\Console\Command;
 
 final class ResolveCodeCommand extends Command
 {
-    protected $description = 'Find where an old commune code (and zip code) points to today';
+    protected $description = 'Find where an old commune code (and postal code) points to today';
 
-    protected $signature = 'zipcode:resolve
+    protected $signature = 'dataset:resolve
         {code : INSEE code of the commune}
-        {--zip= : Zip code of the old address}
+        {--postal-code= : Postal code of the old address}
         {--date= : Date (Y-m-d) from which the code was used, the whole history by default}';
 
     public function handle(ResolveCity $resolveCity): int
     {
         $code = (string) $this->argument('code');
 
-        $cityResolution = $resolveCity->execute($code, $this->stringOption('zip'), $this->dateOption());
+        $cityResolution = $resolveCity->execute($code, $this->stringOption('postal-code'), $this->dateOption());
 
         foreach ($cityResolution->commune->steps as $step) {
             $this->line($this->describe($step));
@@ -74,8 +74,8 @@ final class ResolveCodeCommand extends Command
 
         if (null !== $cityResolution->postalCode && ! $cityResolution->exactPostal) {
             $this->warn(
-                'The zip code ' . $cityResolution->postalCode
-                . ' is not used any more by these communes: all their zip codes are listed.',
+                'The postal code ' . $cityResolution->postalCode
+                . ' is not used any more by these communes: all their postal codes are listed.',
             );
         }
     }

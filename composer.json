@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "stanislas-poisson/french-zip-code",
     "type": "project",
-    "description": "French regions, departments and cities with their zip codes and GPS coordinates.",
+    "description": "French regions, departments and cities with their postal codes and GPS coordinates.",
     "keywords": [
         "laravel",
         "france",

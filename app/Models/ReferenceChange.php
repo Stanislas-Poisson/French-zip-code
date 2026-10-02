@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Change detected by comparing two snapshots (departments, regions, zip codes).
+ * Change detected by comparing two snapshots (departments, regions, postal codes).
  *
  * @property int                       $id
  * @property string                    $entity_type

@@ -19,8 +19,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Runs an update of the dataset: official files, then the point of each zip code, then the reconciliation.
- * The point of each zip code is computed by batches of jobs, which can run in parallel.
+ * Runs an update of the dataset: official files, then the point of each postal code, then the reconciliation.
+ * The point of each postal code is computed by batches of jobs, which can run in parallel.
  */
 final readonly class DatasetUpdater
 {
