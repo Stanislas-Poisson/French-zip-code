@@ -23,6 +23,8 @@ final class DatasetUpdateTest extends TestCase
 
     private string $directory = '';
 
+    private bool $withoutCommuneCentres = false;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -58,10 +60,21 @@ final class DatasetUpdateTest extends TestCase
         $snapshots = Snapshot::query()->count();
 
         $this->command('dataset:update', ['--sync' => true])
-            ->expectsOutputToContain('up_to_date')
+            ->expectsOutputToContain('up to date')
             ->assertSuccessful();
 
         $this->assertSame($snapshots, Snapshot::query()->count());
+    }
+
+    #[Test]
+    public function it_fails_when_the_update_is_incomplete(): void
+    {
+        $this->withoutCommuneCentres = true;
+
+        $this->command('dataset:update', ['--sync' => true])
+            ->expectsOutputToContain('INCOMPLETE')
+            ->expectsOutputToContain('The update is incomplete')
+            ->assertFailed();
     }
 
     #[Test]
@@ -81,7 +94,7 @@ final class DatasetUpdateTest extends TestCase
         $this->command('dataset:update', ['--sync' => true])->assertSuccessful();
 
         $this->command('dataset:update', ['--sync' => true, '--force' => true])
-            ->expectsOutputToContain('dispatched')
+            ->expectsOutputToContain('completed')
             ->assertSuccessful();
 
         $this->assertSame(3, City::query()->whereRelation('commune', 'insee_code', '37261')->count());
@@ -98,6 +111,18 @@ final class DatasetUpdateTest extends TestCase
         $last = Cache::get(DatasetUpdater::REPORT_CACHE_KEY);
         $this->assertIsArray($last);
         $this->assertTrue($last['complete']);
+    }
+
+    #[Test]
+    public function it_reads_the_report_of_the_last_update_without_json(): void
+    {
+        $this->command('dataset:update', ['--sync' => true])->assertSuccessful();
+
+        $this->command('dataset:status')
+            ->expectsOutputToContain('Points by source:          ban ')
+            ->expectsOutputToContain('Cities without a point:    0')
+            ->expectsOutputToContain('Departments failed:        none')
+            ->assertSuccessful();
     }
 
     #[Test]
@@ -163,6 +188,10 @@ final class DatasetUpdateTest extends TestCase
 
         if (str_contains($url, 'data.laposte.fr')) {
             return Http::response((string) file_get_contents($fixtures . 'laposte/hexasmal.csv'));
+        }
+
+        if (str_contains($url, 'geo.api.gouv.fr') && $this->withoutCommuneCentres) {
+            return Http::response('[]', 200, ['Content-Type' => 'application/json']);
         }
 
         if (str_contains($url, 'geo.api.gouv.fr')) {

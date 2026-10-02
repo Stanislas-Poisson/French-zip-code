@@ -150,7 +150,7 @@ All of it is started by a single command, schedulable with the Laravel scheduler
 
 **A job handles one unit of work**, with two levels depending on the source:
 
-- **BAN: one job per department** (101 jobs). The natural unit is the department file: download, streaming read, computation of the medians for all the commune + postal code pairs of that department.
+- **BAN: one job per department** (110 jobs at the first real import: the departments and the overseas collectivities). The natural unit is the department file: download, streaming read, computation of the medians for all the commune + postal code pairs of that department.
 - **Nominatim fallback: one job per pair** commune + postal code with no BAN address. Rate limited to 1 request per second (`Redis::throttle`).
 - The steps are chained: official sources → entity import → BAN batch → fallback batch → changes computation → exports.
 

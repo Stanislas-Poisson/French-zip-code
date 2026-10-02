@@ -38,8 +38,49 @@ final class DatasetStatusCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->line('Last update: ' . json_encode($last, JSON_UNESCAPED_SLASHES));
+        $this->printReport($last);
 
         return self::SUCCESS;
+    }
+
+    private function list(mixed $codes): string
+    {
+        return is_array($codes) && [] !== $codes ? implode(', ', array_map($this->text(...), $codes)) : 'none';
+    }
+
+    private function number(mixed $value): string
+    {
+        return is_numeric($value) ? number_format((int) $value, 0, '.', ' ') : '0';
+    }
+
+    /**
+     * @param array<mixed> $last
+     */
+    private function printReport(array $last): void
+    {
+        $report = is_array($last['report'] ?? null) ? $last['report'] : [];
+
+        $bySource = [];
+
+        foreach (is_array($report['citiesBySource'] ?? null) ? $report['citiesBySource'] : [] as $source => $total) {
+            $bySource[] = $source . ' ' . $this->number($total);
+        }
+
+        $this->line(sprintf(
+            'Last update %s: %s',
+            $this->text($last['runId'] ?? ''),
+            true === ($last['complete'] ?? false) ? 'complete' : 'INCOMPLETE',
+        ));
+        $this->line('  Points by source:          ' . ([] === $bySource ? 'none' : implode(', ', $bySource)));
+        $this->line('  Cities without a point:    ' . $this->number($report['citiesWithoutCoordinates'] ?? 0));
+        $this->line('  Communes without a city:   ' . $this->number($report['communesWithoutCity'] ?? 0));
+        $this->line('  Departments not processed: ' . $this->list($report['departmentsNotRun'] ?? []));
+        $this->line('  Departments failed:        ' . $this->list($report['departmentsFailed'] ?? []));
+        $this->line('  Failed jobs:               ' . $this->number($report['failedJobs'] ?? 0));
+    }
+
+    private function text(mixed $value): string
+    {
+        return is_scalar($value) ? (string) $value : '';
     }
 }

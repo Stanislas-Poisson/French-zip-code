@@ -4,27 +4,29 @@ The dataset files are produced by `make export` and attached to the GitHub relea
 
 ## Steps
 
-1. Update the dataset and check the report.
+1. Update the dataset and export the files in one go.
 
    ```bash
-   make update-sync
+   make build-dataset
+   ```
+
+   The update takes about 15 minutes. If it is incomplete (a city without a point, a department that failed, a failed job), the command stops before the export. `make build-dataset-force` imports every file again even if it did not change.
+
+2. Check the report that the command prints.
+
+   ```bash
    make status
    ```
 
-   The report must show `"complete":true`: every city has a point, every department was processed and no job failed.
-
-2. Export the files.
-
-   ```bash
-   make export
-   ```
+   It must say `complete`: every city has a point, every department was processed and no job failed.
 
 3. Create the version tag, reserved to maintainers and prefixed with `v` (`v4.0.0`), on `main`, once the CI is green.
 
 4. Create the GitHub release with the files from `storage/app/exports` as attachments.
 
    ```bash
-   gh release create v4.0.0 --generate-notes storage/app/exports/sql/dataset.sql storage/app/exports/statistics.json
+   cd storage/app/exports
+   gh release create v4.0.0 --generate-notes csv/*.csv json/*.json sql/dataset.sql statistics.json
    ```
 
    The notes are generated from the Conventional Commits between two tags, which is why their format matters.

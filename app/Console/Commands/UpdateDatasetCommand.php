@@ -8,6 +8,7 @@ use App\Jobs\RunDatasetUpdateJob;
 use App\Services\DatasetUpdater;
 use App\Services\UpdateProgress;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 final class UpdateDatasetCommand extends Command
@@ -38,9 +39,23 @@ final class UpdateDatasetCommand extends Command
         $result = $datasetUpdater->run($runId, $force, $withCoordinates);
         $updateProgress->finish();
 
-        $this->info('Update ' . $runId . ': ' . $result['status'] . '.');
+        // In this mode everything ran in this process, so what the updater calls "dispatched" is over.
+        $this->info(sprintf('Update %s %s.', $runId, 'dispatched' === $result['status'] ? 'completed' : str_replace('_', ' ', $result['status'])));
         $this->call('dataset:status');
 
+        if ($withCoordinates && 'up_to_date' !== $result['status'] && ! $this->isComplete($runId)) {
+            $this->error('The update is incomplete: do not publish this dataset.');
+
+            return self::FAILURE;
+        }
+
         return self::SUCCESS;
+    }
+
+    private function isComplete(string $runId): bool
+    {
+        $last = Cache::get(DatasetUpdater::REPORT_CACHE_KEY);
+
+        return is_array($last) && $runId === ($last['runId'] ?? null) && true === ($last['complete'] ?? false);
     }
 }
