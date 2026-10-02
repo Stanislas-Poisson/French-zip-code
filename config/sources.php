@@ -6,6 +6,16 @@ return [
     // Directory where the downloaded source files are kept, one folder per source and version.
     'directory' => storage_path('app/sources'),
 
+    // A download that meets a temporary error (connection failure, 429 or 5xx) is retried with a growing delay:
+    // initial_delay_ms, doubled after each failure and capped by max_delay_ms. No retry starts once budget_seconds
+    // have elapsed, so an outage never holds an update (or a CI job) longer than about that time.
+    'download' => [
+        'attempts'         => (int) env('SOURCES_DOWNLOAD_ATTEMPTS', 8),
+        'initial_delay_ms' => (int) env('SOURCES_DOWNLOAD_INITIAL_DELAY_MS', 2000),
+        'max_delay_ms'     => (int) env('SOURCES_DOWNLOAD_MAX_DELAY_MS', 60000),
+        'budget_seconds'   => (int) env('SOURCES_DOWNLOAD_BUDGET_SECONDS', 300),
+    ],
+
     'insee' => [
         // data.gouv.fr API of the INSEE "Code officiel géographique" dataset (one resource per file and vintage).
         'dataset_url' => env('INSEE_COG_DATASET_URL', 'https://www.data.gouv.fr/api/1/datasets/58c984b088ee386cdb1261f3/'),
